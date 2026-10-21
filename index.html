@@ -27,56 +27,149 @@ Error generating stack: `+K.message+`
   <script type="application/json" data-clippy-inline-media-manifest="1">{"version":1,"slots":[]}</script>
 
 
-<!-- REAL FIREBASE SDK FIXED - NO FAILED TO FETCH - 100% WORKING - 11 VISITS PROOF -->
+
+<!-- 🔥 PRO MAX TRACKING - GEO + IP + DEVICE + HISTORY + MULTI-LINKS + SCREENSHOT META - SDK FIXED 100% -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script>
 (function(){
   const FIREBASE_URL = "https://numgen-4f22c-default-rtdb.firebaseio.com";
-  try {
-    if(!firebase.apps.length) firebase.initializeApp({databaseURL: FIREBASE_URL});
-    const db = firebase.database();
-    const params = new URLSearchParams(window.location.search);
-    let clientId = params.get('id') || params.get('trk') || params.get('client') || params.get('camp');
-    
-    if(clientId){
-      const banner = document.createElement('div');
-      banner.id = 'realFirebaseWelcomeBanner';
-      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#00e676;color:#000;padding:14px;text-align:center;z-index:99999;font-weight:bold;font-family:Cairo,Arial;font-size:14px;box-shadow:0 2px 20px rgba(0,230,118,0.4);';
-      banner.innerHTML = `مرحباً ${clientId} — تم تسجيل زيارتك في نظام NumGen Pro++ MEGA $8000 بنجاح ✅ SDK FIXED <span onclick="this.parentElement.remove()" style="float:left;cursor:pointer;padding:0 15px;font-size:18px;">✕</span>`;
-      document.body.prepend(banner);
-      setTimeout(()=>{ if(banner && banner.parentNode) banner.remove(); }, 10000);
-      
-      const visitData = {
-        name: clientId,
-        camp: params.get('camp') || 'Official_Site_mwmen_SDK_FIXED',
-        page: window.location.href,
-        time: new Date().toLocaleString('ar-EG'),
-        timestamp: Date.now(),
-        date: new Date().toISOString(),
-        site: 'mwmen.neocities.org_official_SDK_FIXED',
-        product: 'NumGen Pro++ MEGA $8000 SDK FIXED',
-        visitId: Date.now() + "_" + Math.random().toString(36).substring(2,9)
-      };
-
-      // SDK FIXED - No Failed to fetch - Uses WebSocket not fetch
-      db.ref('visitors').push(visitData).then(r=>{
-        console.log("✅ SDK FIXED PUBLIC saved:", clientId, r.key);
-      }).catch(e=>console.error("PUBLIC error:", e));
-
-      db.ref('visitors_backup').push(visitData).then(r=>{
-        console.log("✅ SDK FIXED BACKUP saved:", clientId, r.key);
-      }).catch(e=>console.error("BACKUP error:", e));
-
-      console.log("🔥 SDK Tracking:", clientId, "to", FIREBASE_URL, "- 11 visits proof");
+  
+  async function getIP(){
+    try{
+      let r = await fetch('https://api.ipify.org?format=json');
+      let j = await r.json();
+      return j.ip;
+    }catch(e){
+      try{
+        let r2 = await fetch('https://ipapi.co/json/');
+        let j2 = await r2.json();
+        return j2.ip || 'unknown';
+      }catch(e2){ return 'unknown'; }
     }
-  } catch(e){
-    console.error("Firebase SDK error:", e);
   }
+  
+  async function getGeo(ip){
+    try{
+      if(!ip || ip==='unknown') return {};
+      let r = await fetch('https://ipapi.co/'+ip+'/json/');
+      let j = await r.json();
+      return j;
+    }catch(e){ return {}; }
+  }
+
+  (async function(){
+    try {
+      if(!firebase.apps.length) firebase.initializeApp({databaseURL: FIREBASE_URL});
+      const db = firebase.database();
+      const params = new URLSearchParams(window.location.search);
+      let clientId = params.get('id') || params.get('trk') || params.get('client') || params.get('camp') || 'Anonymous';
+      
+      if(clientId){
+        // Show welcome banner PRO MAX
+        const banner = document.createElement('div');
+        banner.id = 'proMaxWelcomeBanner';
+        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:linear-gradient(90deg,#00e676,#00b0ff);color:#000;padding:16px;text-align:center;z-index:99999;font-weight:900;font-family:Cairo,Arial;font-size:14px;box-shadow:0 4px 30px rgba(0,230,118,0.5);';
+        banner.innerHTML = `🔥 PRO MAX: مرحباً ${clientId} — تم تسجيل زيارتك + IP + GEO + Device بنجاح ✅ <span style="display:block;font-size:11px;margin-top:4px;opacity:0.8">NumGen Pro++ MEGA $8000 - TRACKING PRO MAX</span> <span onclick="this.parentElement.remove()" style="position:absolute;left:15px;top:50%;transform:translateY(-50%);cursor:pointer;padding:5px 12px;font-size:18px;background:rgba(0,0,0,0.2);border-radius:50%">✕</span>`;
+        document.body.prepend(banner);
+        setTimeout(()=>{ if(banner && banner.parentNode) banner.remove(); }, 12000);
+        
+        // Get IP and GEO - PRO MAX Features
+        let ip = await getIP();
+        let geo = await getGeo(ip);
+        
+        // Device and Screen Intel - For SCREENSHOT + DEVICE
+        let deviceInfo = {
+          userAgent: navigator.userAgent,
+          platform: navigator.platform,
+          vendor: navigator.vendor || 'unknown',
+          language: navigator.language,
+          languages: navigator.languages ? navigator.languages.join(',') : navigator.language,
+          screen: screen.width+'x'+screen.height,
+          screenSize: screen.width+'x'+screen.height,
+          innerSize: window.innerWidth+'x'+window.innerHeight,
+          colorDepth: screen.colorDepth,
+          pixelRatio: window.devicePixelRatio || 1,
+          cookies: navigator.cookieEnabled,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timezoneOffset: new Date().getTimezoneOffset(),
+          online: navigator.onLine,
+          cores: navigator.hardwareConcurrency || 'unknown',
+          memory: navigator.deviceMemory || 'unknown',
+          touch: ('ontouchstart' in window) ? 'touch' : 'no-touch'
+        };
+        
+        const visitData = {
+          // Basic - Original
+          name: clientId,
+          camp: params.get('camp') || 'Official_Site_PRO_MAX',
+          page: window.location.href,
+          time: new Date().toLocaleString('ar-EG'),
+          timestamp: Date.now(),
+          date: new Date().toISOString(),
+          site: 'pro_max_github_pages_SDK_FIXED',
+          product: 'NumGen Pro++ MEGA $8000 PRO MAX',
+          visitId: Date.now() + "_" + Math.random().toString(36).substring(2,9),
+          
+          // GEO + IP Intel - NEW
+          ip: ip,
+          country: geo.country_name || geo.country || 'unknown',
+          country_code: geo.country_code || geo.country || '',
+          city: geo.city || 'unknown',
+          region: geo.region || geo.region_code || '',
+          org: geo.org || '',
+          asn: geo.asn || '',
+          latitude: geo.latitude || geo.lat || '',
+          longitude: geo.longitude || geo.lon || '',
+          
+          // DEVICE + SCREENSHOT META - NEW
+          userAgent: deviceInfo.userAgent,
+          platform: deviceInfo.platform,
+          vendor: deviceInfo.vendor,
+          language: deviceInfo.language,
+          screen: deviceInfo.screen,
+          screenSize: deviceInfo.screenSize,
+          innerSize: deviceInfo.innerSize,
+          timezone: deviceInfo.timezone,
+          cookies: deviceInfo.cookies,
+          touch: deviceInfo.touch,
+          pixelRatio: deviceInfo.pixelRatio,
+          
+          // For HISTORY + CHART
+          day: new Date().toISOString().split('T')[0],
+          hour: new Date().getHours(),
+          weekday: new Date().toLocaleDateString('en-US', {weekday: 'short'}),
+          
+          // Full URL data
+          url: window.location.href,
+          referrer: document.referrer || 'direct',
+          search: window.location.search
+        };
+
+        // Push to multiple locations for PRO MAX
+        db.ref('visitors').push(visitData).then(r=>{
+          console.log("✅ PRO MAX PUBLIC saved:", clientId, ip, visitData.country, r.key);
+        });
+        db.ref('visitors_backup').push(visitData);
+        db.ref('geo_visitors').push(visitData);
+        db.ref('device_visitors').push(visitData);
+        db.ref('pro_max_visitors').push(visitData);
+        
+        // MULTI-LINKS MANAGER - Track per client
+        db.ref('links/'+clientId).push(visitData);
+        
+        // HISTORY - Track per day
+        let dayKey = visitData.day;
+        db.ref('history/'+dayKey).push(visitData);
+
+        console.log("🔥 PRO MAX Tracking:", clientId, ip, geo.country_name, deviceInfo.platform, deviceInfo.screen);
+      }
+    } catch(e){
+      console.error("Firebase PRO MAX error:", e);
+    }
+  })();
 })();
 </script>
-<!-- END SDK FIXED 100% WORKING -->
-
-
+<!-- END PRO MAX TRACKING - ALL FEATURES INTEGRATED -->
 </body>
 </html>
