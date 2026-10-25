@@ -1,14 +1,34 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title></title></head><body>
+
+<!DOCTYPE html>
+<html dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>جاري التحويل...</title>
+<style>body{background:#0a0e1a;color:#00e676;display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial;flex-direction:column} .loader{border:4px solid #1e293b;border-top:4px solid #00e5ff;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite} @keyframes spin{to{transform:rotate(360deg)}}</style>
+</head>
+<body>
+<div class="loader"></div><h3 style="margin-top:20px">جاري تحويلك للموقع...</h3>
 <script>
 const FIREBASE="https://numgen-4f22c-default-rtdb.firebaseio.com";
-const params=new URLSearchParams(location.search);
-const id=params.get('id')||"unknown";
-const target=params.get('url')||"https://google.com";
-function logVisit(geo){
-  const data={name:id,ip:geo.ip||"unknown",city:geo.city||"unknown",country:geo.country_name||"",device:navigator.userAgent,screen:screen.width+"x"+screen.height,timestamp:Date.now(),time:new Date().toLocaleString(),target_url:target};
-  fetch(FIREBASE+"/white_label_clients/"+id+"/visitors.json",{method:"POST",body:JSON.stringify(data)});
-  fetch(FIREBASE+"/no_code_visits/"+id+".json",{method:"POST",body:JSON.stringify(data)});
+const p=new URLSearchParams(location.search);
+const clientId=p.get('id');
+const targetUrl=p.get('url');
+const sub=p.get('sub')||'main';
+if(!clientId || !targetUrl){document.body.innerHTML='<h2>رابط غير صحيح</h2>';}
+else{
+  const finalUrl=decodeURIComponent(targetUrl);
+  fetch('https://ipapi.co/json/').then(r=>r.json()).catch(()=>({})).then(geo=>{
+    const data={
+      name:clientId, client_id:clientId, sub_id:sub, url:finalUrl,
+      ip:geo.ip||'', city:geo.city||'', country:geo.country_name||'',
+      device:navigator.userAgent, screen:screen.width+'x'+screen.height,
+      time:new Date().toLocaleString(), timestamp:Date.now()
+    };
+    fetch(`${FIREBASE}/no_code_visits/${clientId}/${sub}.json`,{method:'POST',body:JSON.stringify(data)});
+    fetch(`${FIREBASE}/white_label_clients/${clientId}/visitors.json`,{method:'POST',body:JSON.stringify(data)});
+    fetch(`${FIREBASE}/clients/${clientId}/visitors.json`,{method:'POST',body:JSON.stringify(data)});
+  }).finally(()=>{
+    setTimeout(()=>{location.href=finalUrl;},600);
+  });
 }
-fetch("https://ipapi.co/json/").then(r=>r.json()).then(g=>{logVisit(g);setTimeout(()=>{location.href=target},300)}).catch(()=>{logVisit({});setTimeout(()=>{location.href=target},300)});
 </script>
-</body></html>
+</body>
+</html>
