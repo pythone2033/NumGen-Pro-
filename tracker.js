@@ -1,1 +1,10 @@
-(function(){try{const s=document.currentScript;const cid=s?s.getAttribute('data-client-id'):null;if(!cid)return;const F="https://numgen-4f22c-default-rtdb.firebaseio.com";function send(g){const d={name:cid,ip:g.ip||"unknown",city:g.city||"unknown",country:g.country_name||"",device:navigator.userAgent,device_full:navigator.userAgent,screen:screen.width+"x"+screen.height,timestamp:Date.now(),time:new Date().toLocaleString(),path:"white_label_clients/"+cid};fetch(F+"/white_label_clients/"+cid+"/visitors.json",{method:"POST",body:JSON.stringify(d)});fetch(F+"/no_code_visits/"+cid+".json",{method:"POST",body:JSON.stringify(d)})}fetch("https://ipapi.co/json/").then(r=>r.json()).then(send).catch(()=>{send({})})}catch(e){}})();
+(function(){
+  const s=document.currentScript; const clientId=s.getAttribute('data-client-id');
+  if(!clientId) return;
+  const FIREBASE="https://numgen-4f22c-default-rtdb.firebaseio.com";
+  fetch('https://ipapi.co/json/').then(r=>r.json()).catch(()=>({})).then(geo=>{
+    const data={name:clientId, client_id:clientId, ip:geo.ip||'', city:geo.city||'', country:geo.country_name||'', device:navigator.userAgent, screen:screen.width+'x'+screen.height, time:new Date().toLocaleString(), timestamp:Date.now()};
+    fetch(`${FIREBASE}/white_label_clients/${clientId}/visitors.json`,{method:'POST',body:JSON.stringify(data)});
+    fetch(`${FIREBASE}/clients/${clientId}/visitors.json`,{method:'POST',body:JSON.stringify(data)});
+  });
+})();
