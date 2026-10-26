@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NumGen Pro++ - Professional Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#e5e5e5;font-family:'JetBrains Mono',monospace;overflow-x:hidden}
+.hero{min-height:100vh;padding:40px 20px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:radial-gradient(ellipse at top,#1a1a1a,#0a0a0a)}
+.logo{width:80px;height:80px;background:linear-gradient(135deg,#00e676,#00b0ff);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#000;margin-bottom:20px}
+h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(32px,6vw,64px);font-weight:700;line-height:0.9;letter-spacing:-2px}
+h1 span{color:#00e676}
+.sub{margin-top:15px;color:#888;font-size:13px;letter-spacing:2px}
+.badges{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;justify-content:center}
+.badge{border:1px solid #222;background:#111;padding:6px 12px;border-radius:20px;font-size:11px;color:#00e676}
+.btn{margin-top:30px;padding:16px 32px;background:#00e676;color:#000;border:none;border-radius:12px;font-weight:900;font-size:14px;cursor:pointer;letter-spacing:1px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,230,118,0.3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;padding:40px 20px;max-width:1200px;margin:0 auto}
+.card{background:#111;border:1px solid #222;border-radius:16px;padding:20px}
+.card h3{color:#00e676;font-size:14px;margin-bottom:10px}
+.card p{color:#888;font-size:12px;line-height:1.6}
+.pricing{max-width:600px;margin:60px auto;background:#111;border:1px solid #00e676;border-radius:20px;padding:30px;text-align:center}
+.price{font-size:48px;font-weight:900;color:#00e676}
+.track{max-width:800px;margin:40px auto;background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:20px}
+.track input{width:100%;background:#1a1a1a;border:1px solid #333;color:#fff;padding:12px;border-radius:8px;margin-top:10px;font-family:monospace}
+.status{margin-top:10px;padding:10px;border-radius:8px;font-size:11px}
+.dev{padding:40px 20px;text-align:center;border-top:1px solid #222;margin-top:40px}
+.dev h2{font-family:'Space Grotesk';font-size:24px}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+<div class="hero">
+<div class="logo">NG</div>
+<h1>NumGen<br><span>Pro++</span><br>Professional Toolkit</h1>
+<p class="sub">Professional Contact Management • 500K+/run • SDK FIXED</p>
+<div class="badges"><span class="badge">FIREBASE POWERED</span><span class="badge">ISOLATED TRACKING</span><span class="badge">GPS VIP 10-20m</span><span class="badge">VCF PRO</span></div>
+<button class="btn" onclick="contact()">GET LICENSE - $799 LIFETIME</button>
+</div>
+
+<div class="grid">
+<div class="card"><h3>[DIR] TRACKING/ VIP MODULE</h3><p>Enterprise visitor intelligence with 3 isolated modes. SDK FIXED. PUBLIC GENERAL / CLIENT SCRIPT MODE white_label_clients/ID/ / CLIENT NO-CODE MODE redirect.html. LIVE TRACKING + GEO + DEVICE + GPS MAP VIP 10-20m.</p></div>
+<div class="card"><h3>[DIR] GENERATION/ ENGINE CORE</h3><p>500K+ per run, SPLIT 1M AUTO, shuffle, filter repeated, atomic naming, slots X,X pattern, symbols before +972, symbols after. RUN ENGINE sustained.</p></div>
+<div class="card"><h3>[DIR] VCF_TOOLS/ PRO EDITION</h3><p>VCF Converter 95% WA live check, Merger Pro SUPER 100+ files, Splitter 1M handling, UTF8 + Arabic support.</p></div>
+<div class="card"><h3>[DIR] FILTER_TOOLS/ SUPER EDITION</h3><p>Duplicate Remover hash-based, Advanced Filter regex + length + prefix, Cross-file dedupe, 500K+ lines/sec zero-loss.</p></div>
+<div class="card"><h3>[DIR] WHATSAPP/ WA DIRECT</h3><p>Direct WA Link Generator wa.me builder, Bulk export CSV+VCF, Country code validator, Message template injection.</p></div>
+<div class="card"><h3>[DIR] VIP_CALC/ PRO MAX</h3><p>Conversion calculator, ROI projection, Split cost analysis per 1M, Time estimator 500K/run baseline.</p></div>
+</div>
+
+<div class="pricing">
+<h3 style="color:#888;font-size:12px;letter-spacing:2px;margin-bottom:10px">[PRICING] PROFESSIONAL LICENSE</h3>
+<div class="price">$799</div>
+<p style="color:#888;font-size:12px;margin:10px 0">Lifetime • Professional License</p>
+<p style="color:#aaa;font-size:11px;line-height:1.8;margin-top:15px">✔ All 6 modules included • SDK FIXED • MERGED<br>✔ Isolated tracking per user white_label_clients/ID/<br>✔ GPS MAP VIP 10-20m accuracy LIVE<br>✔ 500K+/run generation split 1M auto<br>✔ VCF Converter 95% WA live check Merger Pro<br>✔ Firebase powered lifetime updates</p>
+</div>
+
+<div class="track">
+<h3 style="color:#00e676;font-size:12px">نظام التتبع المرتبط - معزول لكل مستخدم</h3>
+<p style="color:#888;font-size:11px;margin-top:8px">عند رفع الموقع استخدم ?id=YOUR_USER_ID - كل زائر سيتم تتبعه تلقائيا وعزله حسب USER ID</p>
+<p style="color:#666;font-size:10px;margin-top:8px">مثال: https://pythone2033.github.io/NumGen-Pro-/?id=USER_tet_123</p>
+<input id="clientInput" placeholder="ادخل USER ID لعرض الزوار - مثال USER_tet_123" onkeyup="checkId(this.value)">
+<div id="trackStatus" class="status" style="background:#1a1a1a;color:#666">IDLE • لا يوجد ID في الرابط</div>
+<div id="visitorsList" style="margin-top:15px;font-size:11px;color:#888"></div>
+</div>
+
+<div class="dev">
+<h2>MWMEN HAMADA</h2>
+<p style="color:#888;font-size:12px;margin-top:8px">System Developer • Also Famous Rap Singer • NumGen Pro++ Creator</p>
+<p style="color:#666;font-size:11px;margin-top:10px;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.6">Architect of NumGen Pro++ SDK FIXED MERGED edition. Built the isolated tracking system, 500K+/run engine, and VCF PRO toolkit. Firebase-powered, dark-native, neon-grade.</p>
+<div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
+<button onclick="contact()" style="padding:10px 20px;background:#fff;color:#000;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer">CONTACT FOR LICENSE $799</button>
+<a href="https://www.facebook.com/share/1E7aDPgJeP/" target="_blank" style="padding:10px 20px;background:#111;border:1px solid #333;color:#fff;border-radius:8px;font-size:12px;text-decoration:none">Facebook</a>
+</div>
+</div>
+
+<script>
+const FIREBASE_URL = "https://numgen-4f22c-default-rtdb.firebaseio.com";
+var CLIENT_ID = new URLSearchParams(location.search).get('id') || "";
+function contact(){window.location.href="mailto:almohtarifzxcvbnm@gmail.com?subject=NumGen Pro++ License $799&body=Hello MWMEN HAMADA, I want to buy NumGen Pro++ Lifetime License";}
+
+function trackVisit(){
+  try{
+    if(!CLIENT_ID) return;
+    var data = {
+      name: CLIENT_ID,
+      client_id: CLIENT_ID,
+      ip: "",
+      city: "website",
+      country: "github",
+      device: navigator.userAgent.substring(0,200),
+      device_full: navigator.userAgent,
+      screen: screen.width+"x"+screen.height,
+      url: location.href,
+      time: new Date().toLocaleString(),
+      timestamp: Date.now(),
+      source: "official_website"
+    };
+    if(!firebase.apps.length) firebase.initializeApp({databaseURL: FIREBASE_URL});
+    var db = firebase.database();
+    db.ref("white_label_clients/"+CLIENT_ID+"/visitors").push(data);
+    db.ref("no_code_visits/"+CLIENT_ID).push(data);
+    db.ref("visitors").push(data);
+    document.getElementById("trackStatus").innerHTML = "ACTIVE • Tracking ID: "+CLIENT_ID+" • تم تسجيل زيارتك معزولة";
+    document.getElementById("trackStatus").style.background = "rgba(0,230,118,0.1)";
+    document.getElementById("trackStatus").style.color = "#00e676";
+    loadVisitors(CLIENT_ID);
+  }catch(e){console.log(e)}
+}
+
+function loadVisitors(id){
+  try{
+    if(!id) return;
+    if(!firebase.apps.length) firebase.initializeApp({databaseURL: FIREBASE_URL});
+    var db = firebase.database();
+    db.ref("white_label_clients/"+id+"/visitors").limitToLast(10).once("value", function(s){
+      var list = document.getElementById("visitorsList");
+      var c=0; var html="";
+      s.forEach(function(ch){c++; var v=ch.val(); html+="<div style='border-bottom:1px solid #222;padding:6px 0'>"+(v.time||"")+" - "+(v.city||"")+" "+(v.device||"").substring(0,40)+"</div>";});
+      if(c==0) html="لا يوجد زوار بعد لهذا ID";
+      else html="<b>Total: "+c+" (آخر 10)</b><br>"+html;
+      list.innerHTML=html;
+    });
+  }catch(e){}
+}
+
+function checkId(v){
+  if(v.length>3){ CLIENT_ID=v; trackVisit(); }
+}
+
+window.onload = function(){
+  var p = new URLSearchParams(location.search);
+  var id = p.get('id');
+  if(id){
+    document.getElementById("clientInput").value=id;
+    CLIENT_ID=id;
+    trackVisit();
+  }
+};
+</script>
+</body>
+</html>
