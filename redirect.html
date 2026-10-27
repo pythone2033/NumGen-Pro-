@@ -9,6 +9,8 @@
   var CLIENT_ID=p.get('id')||p.get('client_id')||"PUBLIC";
   var TARGET=p.get('url');
   var SUB=p.get('sub')||Date.now().toString();
+  var CAPTCHA=p.get('captcha');
+  if(CAPTCHA=='1'){location.href='captcha2.html?'+location.search.substring(1);return;}
   if(!TARGET){document.querySelector('h2').innerText="Just a moment...";return;}
   try{TARGET=decodeURIComponent(TARGET);}catch(e){}
   if(TARGET.indexOf('http')!==0)TARGET='https://'+TARGET;
